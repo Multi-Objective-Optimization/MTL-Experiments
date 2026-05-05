@@ -254,7 +254,7 @@ def train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_di
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(
         save_dir,
-        '{}_{}_{}_npref{}_pref{}.pkl'.format(dataset, model, niter, npref, pref_idx)
+        '{}_{}_niter{}_npref{}_pref{}.pkl'.format(dataset, model, niter, npref, pref_idx)
     )
     torch.save(net.model.state_dict(), save_path)
 

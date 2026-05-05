@@ -6,6 +6,6 @@ niter: 100              # số epoch huấn luyện (lenet: ~100, resnet18: ~20)
 
 npref: 5                # số preference vector — mỗi vector cho 1 điểm Pareto
 
-data_dir: data          # thư mục chứa file .pickle của dataset
+data_dir: ../data/multi_mnist       # thư mục chứa file .pickle của dataset
 
 save_dir: saved_model   # thư mục lưu model sau khi train
