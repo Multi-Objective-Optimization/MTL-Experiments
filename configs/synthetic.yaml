@@ -1,0 +1,3 @@
+method: ParetoMTL       # ParetoMTL | MOOMTL | Linear
+
+num: 10                 # số nghiệm Pareto cần tìm
