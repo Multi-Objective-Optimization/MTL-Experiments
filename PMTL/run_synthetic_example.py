@@ -143,19 +143,19 @@ def pareto_mtl_search(ref_vecs, i, t_iter=100, n_dim=20, step_size=1):
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 
-def run(method='ParetoMTL', num=10):
+def run(method='ParetoMTL', num=10, save_dir='results'):
     """Run the specified method and plot results against the true Pareto front.
 
     Args:
         method: 'ParetoMTL', 'MOOMTL', or 'Linear'
         num: number of Pareto-optimal solutions to find
+        save_dir: directory to save plot and log
     """
     pf = create_pf()
     f_value_list = []
     weights = circle_points([1], [num])[0]
 
     for i in range(num):
-        print('Solution {}/{}'.format(i + 1, num))
         if method == 'ParetoMTL':
             x, f = pareto_mtl_search(ref_vecs=weights, i=i)
         elif method == 'MOOMTL':
@@ -163,14 +163,21 @@ def run(method='ParetoMTL', num=10):
         elif method == 'Linear':
             x, f = linear_scalarization_search()
         f_value_list.append(f)
+        print('Solution {}/{}: f1={:.4f}, f2={:.4f}'.format(i + 1, num, f[0], f[1]))
 
     f_value = np.array(f_value_list)
-    plt.plot(pf[:, 0], pf[:, 1], label='Pareto front')
-    plt.scatter(f_value[:, 0], f_value[:, 1], c='r', s=80, label=method)
-    plt.xlabel('f1')
-    plt.ylabel('f2')
-    plt.legend()
-    plt.show()
+
+    import os
+    os.makedirs(save_dir, exist_ok=True)
+
+    fig, ax = plt.subplots()
+    ax.plot(pf[:, 0], pf[:, 1], label='Pareto front')
+    ax.scatter(f_value[:, 0], f_value[:, 1], c='r', s=50, linewidths=0.5, label=method)
+    ax.set_xlabel('f1')
+    ax.set_ylabel('f2')
+    ax.set_title('{}'.format(method))
+    ax.legend()
+    fig.savefig(os.path.join(save_dir, '{}_num{}.png'.format(method, num)), dpi=150, bbox_inches='tight')
 
 
 if __name__ == '__main__':

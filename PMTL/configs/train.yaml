@@ -8,4 +8,4 @@ npref: 5                # số preference vector — mỗi vector cho 1 điểm 
 
 data_dir: ../data/multi_mnist       # thư mục chứa file .pickle của dataset
 
-save_dir: saved_model   # thư mục lưu model sau khi train
+save_dir: results   # thư mục lưu kết quả chạy sau khi train
