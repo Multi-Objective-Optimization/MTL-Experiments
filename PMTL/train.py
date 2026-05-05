@@ -116,10 +116,17 @@ def train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_di
 
     weights = []
     task_train_losses = []
+    task_test_losses = []
     train_accs = []
+    test_accs = []
 
-    print('Preference Vector ({}/{}):'.format(pref_idx + 1, npref))
-    print(ref_vec[pref_idx].cpu().numpy())
+    os.makedirs(save_dir, exist_ok=True)
+    log_path = os.path.join(save_dir, 'result.txt')
+
+    ref_vec_str = ', '.join(map(str, ref_vec[pref_idx].cpu().numpy()))
+    print('Preference Vector ({}/{}): {}'.format(pref_idx + 1, npref, ref_vec_str))
+    with open(log_path, 'a') as f:
+        f.write('Preference Vector ({}/{}): {}\n'.format(pref_idx + 1, npref, ref_vec_str))
 
     # Initialization phase: run at most 2 epochs to find a feasible starting point.
     # The for/else construct breaks out of both loops once feasibility is found.
@@ -243,15 +250,45 @@ def train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_di
                 total_train_loss = torch.stack(total_train_loss)
                 average_train_loss = torch.mean(total_train_loss, dim=0)
 
+                total_test_loss = []
+                correct1_test = 0
+                correct2_test = 0
+
+                for batch in test_loader:
+                    X = batch[0]
+                    ts = batch[1]
+                    if torch.cuda.is_available():
+                        X = X.cuda()
+                        ts = ts.cuda()
+
+                    valid_test_loss = net(X, ts)
+                    total_test_loss.append(valid_test_loss)
+                    output1 = net.model(X).max(2, keepdim=True)[1][:, 0]
+                    output2 = net.model(X).max(2, keepdim=True)[1][:, 1]
+                    correct1_test += output1.eq(ts[:, 0].view_as(output1)).sum().item()
+                    correct2_test += output2.eq(ts[:, 1].view_as(output2)).sum().item()
+
+                test_acc = np.stack([
+                    1.0 * correct1_test / len(test_loader.dataset),
+                    1.0 * correct2_test / len(test_loader.dataset)
+                ])
+                total_test_loss = torch.stack(total_test_loss)
+                average_test_loss = torch.mean(total_test_loss, dim=0)
+
             if torch.cuda.is_available():
                 task_train_losses.append(average_train_loss.data.cpu().numpy())
+                task_test_losses.append(average_test_loss.data.cpu().numpy())
                 train_accs.append(train_acc)
+                test_accs.append(test_acc)
                 weights.append(weight_vec.cpu().numpy())
 
-                print('{}/{}: weights={}, train_loss={}, train_acc={}'.format(
-                    t + 1, niter, weights[-1], task_train_losses[-1], train_accs[-1]))
+                log_str = '{}/{}: weights={}, train_loss={}, train_acc={}, test_loss={}, test_acc={}'.format(
+                    t + 1, niter, weights[-1], task_train_losses[-1], train_accs[-1],
+                    task_test_losses[-1], test_accs[-1])
+                print(log_str)
+                with open(log_path, 'a') as f:
+                    f.write(log_str + '\n')
 
-    os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(
         save_dir,
         '{}_{}_niter{}_npref{}_pref{}.pkl'.format(dataset, model, niter, npref, pref_idx)
