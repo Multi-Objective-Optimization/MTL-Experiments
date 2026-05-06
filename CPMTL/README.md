@@ -1,7 +1,5 @@
 # Efficient Continuous Pareto Exploration in Multi-Task Learning
 
-![zdt2](assets/zdt2.png)
-
 [Pingchuan Ma](https://pingchuan.ma/)\*,
 [Tao Du](https://people.csail.mit.edu/taodu/)\*,
 and
