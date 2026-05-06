@@ -1,0 +1,17 @@
+# Core deep learning
+torch>=0.4.0
+torchvision>=0.2.0
+
+# Data & numerics
+numpy>=1.14.0
+scipy
+Pillow>=4.0.0
+
+# Training utilities
+tqdm>=4.0.0
+
+# Config
+PyYAML>=3.12
+
+# MNIST downloader (six.moves.urllib used in multi_mnist_loader)
+six>=1.0.0
