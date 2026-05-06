@@ -1,9 +1,3 @@
-# DISCONTINUATION OF PROJECT #  
-This project will no longer be maintained by Intel.  
-Intel has ceased development and contributions including, but not limited to, maintenance, bug fixes, new releases, or updates, to this project.  
-Intel no longer accepts patches to this project.  
- If you have an ongoing need to use this project, are interested in independently developing it, or would like to maintain patches for the open source software community, please create your own fork of this project.  
-  
 # Multi-Task Learning as Multi-Objective Optimization
 
 This code repository includes the source code for the [Paper](https://arxiv.org/abs/1810.04650):
@@ -38,22 +32,4 @@ The code base uses `configs/config.yaml` for global configurations, dataset path
 To train a model, use the command: 
 ```bash
 python train.py --config configs/config.yaml
-```
-
-# Contact
-For any question, you can contact ozan.sener@intel.com
-
-# Citation
-If you use this codebase or any part of it for a publication, please cite:
-```
-@incollection{NeurIPS2018_Sener_Koltun,
-title = {Multi-Task Learning as Multi-Objective Optimization},
-author = {Sener, Ozan and Koltun, Vladlen},
-booktitle = {Advances in Neural Information Processing Systems 31},
-editor = {S. Bengio and H. Wallach and H. Larochelle and K. Grauman and N. Cesa-Bianchi and R. Garnett},
-pages = {525--536},
-year = {2018},
-publisher = {Curran Associates, Inc.},
-url = {http://papers.nips.cc/paper/7334-multi-task-learning-as-multi-objective-optimization.pdf}
-}
 ```
