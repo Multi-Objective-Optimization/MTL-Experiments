@@ -121,7 +121,7 @@ def train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_di
     test_accs = []
 
     os.makedirs(save_dir, exist_ok=True)
-    log_path = os.path.join(save_dir, 'result.txt')
+    log_path = os.path.join(save_dir, '{}_{}_result.txt'.format(dataset, model))
 
     ref_vec_str = ', '.join(map(str, ref_vec[pref_idx].cpu().numpy()))
     print('Preference Vector ({}/{}): {}'.format(pref_idx + 1, npref, ref_vec_str))
