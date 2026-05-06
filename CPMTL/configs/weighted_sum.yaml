@@ -1,0 +1,15 @@
+data:
+  root: ./data
+  batch_size: 256
+  num_workers: 2
+
+train:
+  seed: 42
+  epochs: 30
+  lr: 0.01
+  momentum: 0.9
+  weight_decay: 0.0
+  n_prefs: 5
+
+output:
+  dir: ./results/weighted_sum

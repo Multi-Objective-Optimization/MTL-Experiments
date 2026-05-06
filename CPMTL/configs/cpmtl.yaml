@@ -1,0 +1,25 @@
+data:
+  root: ./data
+  batch_size: 2048
+  num_workers: 2
+
+train:
+  seed: 42
+  n_steps: 10
+  lr: 0.1
+  momentum: 0.0
+  weight_decay: 0.0
+
+solver:
+  damping: 0.1
+  maxiter: 50
+  tolerance: 1.0e-5
+  shift: 0.0
+  kkt_momentum: 0.0
+  stochastic: false
+
+input:
+  checkpoint_dir: ./results/weighted_sum
+
+output:
+  dir: ./results/cpmtl
