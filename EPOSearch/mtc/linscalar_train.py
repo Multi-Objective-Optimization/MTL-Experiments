@@ -10,7 +10,7 @@ from time import time
 import pickle
 
 
-def train(dataset, base_model, niter, preference):
+def train(dataset, niter, preference):
 
     print("Preference Vector = {}".format(preference))
 
@@ -117,9 +117,6 @@ def train(dataset, base_model, niter, preference):
                 print('{}/{}: train_loss={}'.format(
                     t + 1, niter, task_train_losses[-1]))
 
-    # torch.save(model.model.state_dict(),
-    #            f'./saved_model/{dataset}_{base_model}_niter_{niter}.pickle')
-
     result = {"training_losses": task_train_losses}
 
     return result
@@ -135,7 +132,7 @@ def circle_points(K, min_angle=None, max_angle=None):
     return np.c_[x, y]
 
 
-def run(dataset='emotion', base_model='fnn', niter=100, npref=5):
+def run(dataset='emotion', niter=100, npref=5):
     """
     run Pareto MTL
     """
@@ -144,10 +141,10 @@ def run(dataset='emotion', base_model='fnn', niter=100, npref=5):
     preferences = np.abs(np.random.randn(npref, n_tasks))
     preferences /= preferences.sum(axis=1, keepdims=True)
     results = dict()
-    out_file_prefix = f"linscalar_{dataset}_{base_model}_{niter}_{npref}.pkl"
+    out_file_prefix = f"linscalar_{dataset}_{niter}_{npref}.pkl"
     for i, pref in enumerate(preferences[::-1]):
         s_t = time()
-        res = train(dataset, base_model, niter, pref)
+        res = train(dataset, niter, pref)
         results[i] = {"r": pref, "res": res}
         print(f"**** Time taken for {dataset}_{i} = {time() - s_t}")
     pickle.dump(results, open(os.path.join("results", out_file_prefix), "wb"))

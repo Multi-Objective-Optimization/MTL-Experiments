@@ -10,7 +10,7 @@ from time import time
 import pickle
 
 
-def train(dataset, base_model, niter, j):
+def train(dataset, niter, j):
     print("Preference only for {}".format(j))
 
     # LOAD DATASET
@@ -46,17 +46,13 @@ def train(dataset, base_model, niter, j):
     # DEFINE MODEL
     # ---------------------
     model = RegressionTrain(RegressionModel(n_feats, n_tasks))
-    # model.randomize()
     if torch.cuda.is_available():
         model.cuda()
     # ---------***---------
 
     # DEFINE OPTIMIZERS
     # -----------------
-    # Choose different optimizers for different base model
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=0.)
-    # scheduler = torch.optim.lr_scheduler.MultiStepLR(
-    #     optimizer, milestones=[15, 30, 45, 60, 75, 90], gamma=0.8)
     # ---------***---------
 
 
@@ -115,9 +111,6 @@ def train(dataset, base_model, niter, j):
                 print('{}/{}: train_loss={}'.format(
                     t + 1, niter, task_train_losses[-1]))
 
-    # torch.save(model.model.state_dict(),
-    #            f'./saved_model/{dataset}_{base_model}_niter_{niter}.pickle')
-
     result = {"training_losses": task_train_losses}
 
     return result
@@ -133,7 +126,7 @@ def circle_points(K, min_angle=None, max_angle=None):
     return np.c_[x, y]
 
 
-def run(dataset='emotion', base_model='fnn', niter=100):
+def run(dataset='emotion', niter=100):
     """
     run Pareto MTL
     """
@@ -142,12 +135,12 @@ def run(dataset='emotion', base_model='fnn', niter=100):
     results = dict()
     for j in range(n_tasks):
         s_t = time()
-        res = train(dataset, base_model, niter, j)
+        res = train(dataset, niter, j)
         results[j] = {"r": j, "res": res}
         print(f"**** Time taken for {dataset}_{j} = {time() - s_t}")
 
     results_file = os.path.join("results",
-                                f"indiv_{dataset}_{base_model}_{niter}.pkl")
+                                f"indiv_{dataset}_{niter}.pkl")
     pickle.dump(results, open(results_file, "wb"))
     print(f"**** Time taken for {dataset} = {time() - start_time}")
 

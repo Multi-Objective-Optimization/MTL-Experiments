@@ -12,7 +12,7 @@ from time import time
 import pickle
 
 
-def get_d_paretomtl_init(grads,value,weights,i):
+def get_d_paretomtl_init(grads, value, weights, i):
     """ 
     calculate the gradient direction for ParetoMTL initialization 
     """
@@ -50,7 +50,7 @@ def get_d_paretomtl_init(grads,value,weights,i):
     return flag, torch.stack(new_weights)
 
 
-def get_d_paretomtl(grads,value,weights,i):
+def get_d_paretomtl(grads, value, weights, i):
     """ calculate the gradient direction for ParetoMTL """
     
     # check active constraints
@@ -94,6 +94,7 @@ def circle_points_(r, n):
         y = r * np.sin(t)
         circles.append(np.c_[x, y])
     return circles
+
 def circle_points(K, min_angle=None, max_angle=None):
     # generate evenly distributed preference vector
     ang0 = np.pi / 20. if min_angle is None else min_angle
@@ -105,7 +106,7 @@ def circle_points(K, min_angle=None, max_angle=None):
 
 
 
-def train(dataset, base_model, niter, npref, rvecs, pref_idx):
+def train(dataset, niter, npref, rvecs, pref_idx):
 
     # generate #npref preference vectors
     ref_vec = torch.tensor(rvecs).cuda().float()
@@ -318,15 +319,12 @@ def train(dataset, base_model, niter, npref, rvecs, pref_idx):
                 print('{}/{}: train_loss={}'.format(
                     t + 1, niter, task_train_losses[-1]))
 
-    # torch.save(model.model.state_dict(),
-    #            f'./saved_model/{dataset}_{base_model}_niter_{niter}.pickle')
-
     result = {"training_losses": task_train_losses}
 
     return result
     
 
-def run(dataset = 'emotion',base_model = 'fnn', niter = 100, npref = 5):
+def run(dataset = 'emotion', niter = 100, npref = 5):
     """
     run Pareto MTL
     """
@@ -335,11 +333,11 @@ def run(dataset = 'emotion',base_model = 'fnn', niter = 100, npref = 5):
     preferences = np.abs(np.random.randn(npref, n_tasks))
     preferences /= preferences.sum(axis=1, keepdims=True)
     results = dict()
-    out_file_prefix = f"pmtl_{dataset}_{base_model}_{niter}_{npref}.pkl"
+    out_file_prefix = f"pmtl_{dataset}_{niter}_{npref}.pkl"
     for i, pref in enumerate(preferences):
         s_t = time()
         pref_idx = i
-        res = train(dataset, base_model, niter, npref, preferences, pref_idx)
+        res = train(dataset, niter, npref, preferences, pref_idx)
         results[i] = {"r": pref, "res": res}
         print(f"**** Time taken for {dataset}_{i} = {time() - s_t}")
         # results_file = out_file_prefix + f"{i}.pkl"

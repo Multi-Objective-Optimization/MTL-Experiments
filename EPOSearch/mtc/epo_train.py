@@ -2,7 +2,6 @@ import numpy as np
 import os
 
 import torch
-import torch.utils.data
 from torch.autograd import Variable
 
 from models.model_fnn import RegressionModel, RegressionTrain
@@ -22,12 +21,11 @@ def getNumParams(params):
     return numParams, numTrainable
 
 
-def train(dataset, base_model, niter, preference):
+def train(dataset, niter, preference):
     print("Preference Vector = {}".format(preference))
 
     # LOAD DATASET
     # ------------
-    # MultiMNIST: multi_mnist.pickle
     if dataset == 'emotion':
         with open('data/emotion.pkl', 'rb') as f:
             trainX, trainLabel, testX, testLabel = pickle.load(f)
@@ -61,7 +59,6 @@ def train(dataset, base_model, niter, preference):
     model = RegressionTrain(RegressionModel(n_feats, n_tasks))
     _, n_params = getNumParams(model.parameters())
     print(f"# params={n_params}; # layers={len(model.model.layers)}")
-    # model.randomize()
     if torch.cuda.is_available():
         model.cuda()
     # ---------***---------
@@ -69,10 +66,10 @@ def train(dataset, base_model, niter, preference):
     # DEFINE OPTIMIZERS
     # -----------------
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=0.)
-    # scheduler = torch.optim.lr_scheduler.MultiStepLR(
-    #     optimizer, milestones=[15, 30, 45, 60, 75, 90], gamma=0.8)
+    # ---------***---------
 
     # Instantia EPO Linear Program Solver
+    # -----------------
     epo_lp = EPO_LP(m=n_tasks, n=n_params, r=preference)
     # ---------***---------
 
@@ -85,12 +82,10 @@ def train(dataset, base_model, niter, preference):
     # TRAIN
     # -----
     for t in range(niter):
-        # scheduler.step()
-
         n_linscalar_adjusts = 0
         descent = 0.
         model.train()
-        for (it, batch) in enumerate(train_loader):
+        for batch in train_loader:
             X = batch[0]
             ts = batch[1]
             if torch.cuda.is_available():
@@ -100,6 +95,7 @@ def train(dataset, base_model, niter, preference):
             # Obtain losses and gradients
             grads = {}
             losses = []
+            
             for i in range(n_tasks):
                 optimizer.zero_grad()
                 task_loss = model(X, ts)
@@ -125,10 +121,6 @@ def train(dataset, base_model, niter, preference):
                 if epo_lp.last_move == "dom":
                     descent += 1
             except Exception as e:
-                # print(e)
-                # print(f'losses:{losses}')
-                # print(f'C:\n{GG.cpu().numpy()}')
-                # raise RuntimeError('manual tweak')
                 alpha = None
             if alpha is None:   # A patch for the issue in cvxpy
                 alpha = preference / preference.sum()
@@ -155,8 +147,7 @@ def train(dataset, base_model, niter, preference):
             with torch.no_grad():
                 total_train_loss = []
 
-                for (it, batch) in enumerate(test_loader):
-
+                for batch in test_loader:
                     X = batch[0]
                     ts = batch[1]
                     if torch.cuda.is_available():
@@ -177,9 +168,6 @@ def train(dataset, base_model, niter, preference):
                 print('{}/{}: train_loss={}'.format(
                     t + 1, niter, task_train_losses[-1]))
 
-    # torch.save(model.model.state_dict(),
-    #            f'./saved_model/{dataset}_{base_model}_niter_{niter}.pickle')
-
     result = {"training_losses": task_train_losses}
 
     return result
@@ -195,20 +183,19 @@ def circle_points(K, min_angle=None, max_angle=None):
     return np.c_[x, y]
 
 
-def run(dataset='emotion', base_model='fnn', niter=100, npref=5):
+def run(dataset='emotion', niter=100, npref=5):
     """
     run Pareto MTL
     """
-    # if dataset == 'rf1':
     n_tasks = 6
     start_time = time()
     preferences = np.abs(np.random.randn(npref, n_tasks))
     preferences /= preferences.sum(axis=1, keepdims=True)
     results = dict()
-    out_file_prefix = f"epo_{dataset}_{base_model}_{niter}_{npref}.pkl"
+    out_file_prefix = f"epo_{dataset}_{niter}_{npref}.pkl"
     for i, pref in enumerate(preferences[::-1]):
         s_t = time()
-        res = train(dataset, base_model, niter, pref)
+        res = train(dataset, niter, pref)
         results[i] = {"r": pref, "res": res}
         print(f"**** Time taken for {dataset}_{i} = {time() - s_t}")
     pickle.dump(results, open(os.path.join("results", out_file_prefix), "wb"))

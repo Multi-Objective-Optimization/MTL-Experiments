@@ -1,4 +1,3 @@
-# lenet base model for Pareto MTL
 import torch
 import torch.nn as nn
 
@@ -12,7 +11,6 @@ class RegressionTrain(torch.nn.Module):
         self.loss = nn.BCELoss(reduction='none')
 
     def forward(self, x, ts):
-        # n_tasks = self.model.n_tasks
         ys = self.model(x)
         task_loss = self.loss(ys, ts).mean(dim=0)
         return task_loss
@@ -36,7 +34,6 @@ class RegressionModel(torch.nn.Module):
         while n_neurons > n_tasks:
             self.layers.append(nn.Linear(n_neurons, int(n_neurons / 2)))
             n_neurons = int(n_neurons / 2)
-        # if n_neurons != n_tasks:
         self.layers.append(nn.Linear(n_neurons, n_tasks))
 
         for i in range(self.n_tasks):
@@ -50,5 +47,4 @@ class RegressionModel(torch.nn.Module):
                 y = torch.tanh(y_temp)
             else:
                 y = torch.sigmoid(y_temp)
-
         return y
