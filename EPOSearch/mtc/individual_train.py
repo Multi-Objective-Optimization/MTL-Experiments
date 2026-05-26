@@ -3,9 +3,8 @@ import os
 
 import torch
 import torch.utils.data
-from torch.autograd import Variable
 
-from model_fnn import RegressionModel, RegressionTrain
+from models.model_fnn import RegressionModel, RegressionTrain
 
 from time import time
 import pickle

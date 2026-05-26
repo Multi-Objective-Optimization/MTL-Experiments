@@ -4,7 +4,7 @@ import os
 
 import matplotlib.pyplot as plt
 from brokenaxes import brokenaxes
-from latex_utils import latexify
+from utils.latex_utils import latexify
 
 baseline = "indiv"
 methods = ["EPO", "PMTL", "LinScalar"]

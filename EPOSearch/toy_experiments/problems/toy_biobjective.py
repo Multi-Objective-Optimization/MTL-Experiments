@@ -4,7 +4,7 @@ from autograd import grad
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from labellines import labelLines   # , labelLine,
-from latex_utils import latexify
+from EPOSearch.toy_experiments.utils.latex_utils import latexify
 
 
 def f1(x):

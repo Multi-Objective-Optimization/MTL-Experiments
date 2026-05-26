@@ -5,7 +5,7 @@ from solvers import epo_search, pareto_mtl_search
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from latex_utils import latexify
+from utils.latex_utils import latexify
 
 
 if __name__ == "__main__":

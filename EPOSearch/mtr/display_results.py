@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pickle as pkl
 import pandas as pd
-from latex_utils import latexify
+from utils.latex_utils import latexify
 import os
 
 

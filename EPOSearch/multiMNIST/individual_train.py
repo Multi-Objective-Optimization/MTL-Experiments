@@ -3,9 +3,8 @@ import os
 
 import torch
 import torch.utils.data
-from torch.autograd import Variable
 
-from model_lenet import RegressionModel, RegressionTrain
+from models.model_lenet import RegressionModel, RegressionTrain
 from model_resnet import MnistResNet, RegressionTrainResNet
 
 from time import time

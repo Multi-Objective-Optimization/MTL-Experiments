@@ -6,10 +6,9 @@ from solvers import epo_search
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib.colors as mcolors
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import proj3d
-from latex_utils import latexify
+from utils.latex_utils import latexify
 
 
 class Arrow3D(FancyArrowPatch):

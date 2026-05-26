@@ -5,10 +5,10 @@ import torch
 import torch.utils.data
 from torch.autograd import Variable
 
-from model_lenet import RegressionModel, RegressionTrain
+from models.model_lenet import RegressionModel, RegressionTrain
 from model_resnet import MnistResNet, RegressionTrainResNet
 
-from epo_lp import EPO_LP
+from solvers.epo_lp import EPO_LP
 from time import time
 import pickle
 

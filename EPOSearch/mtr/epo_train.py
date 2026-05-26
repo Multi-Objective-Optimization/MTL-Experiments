@@ -5,9 +5,9 @@ import torch
 import torch.utils.data
 from torch.autograd import Variable
 
-from model_fnn import RegressionModel, RegressionTrain
+from models.model_fnn import RegressionModel, RegressionTrain
 
-from epo_lp import EPO_LP
+from solvers.epo_lp import EPO_LP
 from time import time
 import pickle
 

@@ -5,9 +5,9 @@ import torch
 import torch.utils.data
 from torch.autograd import Variable
 
-from model_fnn import RegressionModel, RegressionTrain
+from models.model_fnn import RegressionModel, RegressionTrain
 
-from min_norm_solvers import MinNormSolver
+from solvers.min_norm_solvers import MinNormSolver
 from time import time
 import pickle
 

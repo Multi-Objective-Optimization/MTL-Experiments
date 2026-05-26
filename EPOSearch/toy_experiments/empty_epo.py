@@ -5,7 +5,7 @@ from problems.toy_biobjective import concave_fun_eval, create_pf, circle_points
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from latex_utils import latexify
+from utils.latex_utils import latexify
 
 
 def get_shifted_concave_fun(shift=0):

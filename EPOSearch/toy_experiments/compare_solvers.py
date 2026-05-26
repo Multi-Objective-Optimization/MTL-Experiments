@@ -4,7 +4,7 @@ from problems.toy_biobjective import circle_points, concave_fun_eval, create_pf
 from solvers import epo_search, pareto_mtl_search, linscalar, moo_mtl_search
 
 import matplotlib.pyplot as plt
-from latex_utils import latexify
+from utils.latex_utils import latexify
 
 if __name__ == '__main__':
     K = 4       # Number of trajectories
