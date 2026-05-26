@@ -11,21 +11,6 @@
 
 ---
 
-## Bộ dữ liệu
-
-Ba bộ dữ liệu benchmark được sử dụng (giống với Lin et al., 2019):
-
-| Dataset | Mô tả | Task 1 | Task 2 |
-|---|---|---|---|
-| **Multi-MNIST** | Ghép 2 ảnh chữ số MNIST ngẫu nhiên: một ảnh ở góc trên-trái, một ảnh ở góc dưới-phải | Phân loại ảnh trên-trái | Phân loại ảnh dưới-phải |
-| **Multi-Fashion** | Tương tự Multi-MNIST nhưng dùng FashionMNIST (Xiao et al., 2017) | Phân loại ảnh trên-trái | Phân loại ảnh dưới-phải |
-| **Multi-Fashion+MNIST** | Ghép 1 ảnh MNIST (trên-trái) và 1 ảnh FashionMNIST (dưới-phải) | Phân loại MNIST | Phân loại FashionMNIST |
-
-- **Kích thước:** 120,000 mẫu train / 20,000 mẫu test cho mỗi dataset
-- **Nguồn:** https://github.com/Xi-L/ParetoMTL
-
----
-
 ## Cấu hình thí nghiệm
 
 | Thành phần | Chi tiết |
@@ -91,6 +76,5 @@ multiMNIST/
 ├── min_norm_solvers.py     # Solver tìm hướng min-norm (dùng cho MGDA/PMTL)
 ├── display_result.py       # Visualize và so sánh kết quả
 ├── latex_utils.py          # Tiện ích xuất bảng LaTeX
-├── data/                   # Thư mục chứa dataset
 └── results/                # Thư mục lưu file .pkl kết quả
 ```

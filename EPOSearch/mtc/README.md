@@ -79,9 +79,6 @@ mtc/
 ├── min_norm_solvers.py     # Solver tìm hướng min-norm
 ├── display_results.py      # Visualize và so sánh kết quả
 ├── latex_utils.py          # Tiện ích xuất bảng LaTeX
-├── data/
-│   ├── readme.md           # Mô tả dữ liệu
-│   └── DataExploration.ipynb  # Notebook khám phá dữ liệu
 └── results/                # Thư mục lưu file .pkl kết quả
 ```
 
