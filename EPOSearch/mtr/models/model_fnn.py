@@ -1,8 +1,6 @@
 # lenet base model for Pareto MTL
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-
 from torch.nn.modules.loss import MSELoss
 
 
@@ -47,7 +45,7 @@ class RegressionModel(torch.nn.Module):
         self.layers.append(nn.Linear(n_neurons, n_tasks))
 
         for i in range(self.n_tasks):
-            setattr(self, 'task_{}'.format(i), nn.Linear(50, 10))
+            setattr(self, "task_{}".format(i), nn.Linear(50, 10))
 
     def forward(self, x, i=None):
         y = x

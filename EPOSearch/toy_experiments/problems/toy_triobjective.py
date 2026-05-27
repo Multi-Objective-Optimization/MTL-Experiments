@@ -1,30 +1,29 @@
 import autograd.numpy as np
-from autograd import grad
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
-from mpl_toolkits.mplot3d import Axes3D
+from autograd import grad
 
 
 def f1(x):
     n = len(x)
-    dx = np.linalg.norm(x - 1. / np.sqrt(n))
-    return 1. - np.exp(-dx**2)
+    dx = np.linalg.norm(x - 1.0 / np.sqrt(n))
+    return 1.0 - np.exp(-(dx**2))
 
 
 def f2(x):
     n = len(x)
-    dx = np.linalg.norm(x + 1. / np.sqrt(n))
-    return 1. - np.exp(-dx**2)
+    dx = np.linalg.norm(x + 1.0 / np.sqrt(n))
+    return 1.0 - np.exp(-(dx**2))
 
 
 def f3(x):
     n = len(x)
     idx = range(1, len(x), 2)
     shift = np.ones_like(x)
-    shift[idx] = -1.
+    shift[idx] = -1.0
     dx = np.linalg.norm(x + shift / np.sqrt(n))
-    return 1. - np.exp(-dx**2)
+    return 1.0 - np.exp(-(dx**2))
 
 
 # calculate the gradients using autograd
@@ -37,8 +36,7 @@ def concave_fun_eval(x):
     """
     return the function values and gradient values
     """
-    return np.stack([f1(x), f2(x), f3(x)]), \
-        np.stack([f1_dx(x), f2_dx(x), f3_dx(x)])
+    return np.stack([f1(x), f2(x), f3(x)]), np.stack([f1_dx(x), f2_dx(x), f3_dx(x)])
 
 
 # ### create the ground truth Pareto front ###
@@ -82,17 +80,19 @@ def sphere_points(K, min_angle=None, max_angle=None):
     # azim = np.linspace(ang0, ang1, endpoint=True, num=K)
     # elev = np.linspace(ang0, ang1, endpoint=True, num=K)
 
-    azim = [np.linspace(np.pi / 8, np.pi * 3 / 8, endpoint=True, num=3),
-            np.linspace(np.pi / 5, np.pi * 3. / 10, endpoint=True, num=2),
-            [np.pi / 4]]
+    azim = [
+        np.linspace(np.pi / 8, np.pi * 3 / 8, endpoint=True, num=3),
+        np.linspace(np.pi / 5, np.pi * 3.0 / 10, endpoint=True, num=2),
+        [np.pi / 4],
+    ]
     elev = [np.pi / 3, np.pi / 6, np.pi / 12]
     rs = []
     for i, el in enumerate(elev):
         azs = azim[i] if i % 2 != 0 else azim[i][::-1]
         for az in azs:
-            rs.append(np.array([np.sin(el) * np.cos(az),
-                                np.sin(el) * np.sin(az),
-                                np.cos(el)]))
+            rs.append(
+                np.array([np.sin(el) * np.cos(az), np.sin(el) * np.sin(az), np.cos(el)])
+            )
 
     # for az in azim:
     #     for el in elev:
@@ -104,22 +104,39 @@ def sphere_points(K, min_angle=None, max_angle=None):
     return np.stack(rs)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     pf, pf_tri, ls, tri = create_pf()
     fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1, projection='3d')
-    ax.plot_trisurf(pf[:, 0], pf[:, 1], pf[:, 2], triangles=pf_tri.triangles,
-                    color='k', alpha=0.5, shade=True)
-    ax.plot_trisurf(ls[:, 0], ls[:, 1], ls[:, 2], triangles=tri.triangles,
-                    color='k', linewidth=0., edgecolor='none', alpha=0.1, shade=True)
+    ax = fig.add_subplot(1, 1, 1, projection="3d")
+    ax.plot_trisurf(
+        pf[:, 0],
+        pf[:, 1],
+        pf[:, 2],
+        triangles=pf_tri.triangles,
+        color="k",
+        alpha=0.5,
+        shade=True,
+    )
+    ax.plot_trisurf(
+        ls[:, 0],
+        ls[:, 1],
+        ls[:, 2],
+        triangles=tri.triangles,
+        color="k",
+        linewidth=0.0,
+        edgecolor="none",
+        alpha=0.1,
+        shade=True,
+    )
 
-    fake2Dline = mpl.lines.Line2D([0], [0], linestyle="none", c='k',
-                                  marker='s', alpha=0.5)
-    ax.legend([fake2Dline], ['Pareto Front'], numpoints=1)
-    ax.set_xlabel(r'$l_1$')
-    ax.set_ylabel(r'$l_2$')
-    ax.set_zlabel(r'$l_3$')
+    fake2Dline = mpl.lines.Line2D(
+        [0], [0], linestyle="none", c="k", marker="s", alpha=0.5
+    )
+    ax.legend([fake2Dline], ["Pareto Front"], numpoints=1)
+    ax.set_xlabel(r"$l_1$")
+    ax.set_ylabel(r"$l_2$")
+    ax.set_zlabel(r"$l_3$")
     # ax.grid(False)
 
     ax.set_xticks([0.2, 0.4, 0.6, 0.8])
@@ -135,9 +152,9 @@ if __name__ == '__main__':
     # ax.zaxis._axinfo["grid"]['color'] =  (1,1,1,0)
 
     ax.grid(False)
-    ax.xaxis.pane.set_edgecolor('black')
-    ax.yaxis.pane.set_edgecolor('black')
-    ax.zaxis.pane.set_edgecolor('black')
+    ax.xaxis.pane.set_edgecolor("black")
+    ax.yaxis.pane.set_edgecolor("black")
+    ax.zaxis.pane.set_edgecolor("black")
     ax.xaxis.pane.fill = False
     ax.yaxis.pane.fill = False
     ax.zaxis.pane.fill = False
@@ -151,24 +168,24 @@ if __name__ == '__main__':
     # ax.set_xticklabels(['0.2', '0.4', '0.6', '0.8'], rotation=0,
     #                    verticalalignment='bottom',
     #                    horizontalalignment='center')
-    [t.set_va('bottom') for t in ax.get_yticklabels()]
-    [t.set_ha('center') for t in ax.get_yticklabels()]
-    [t.set_va('bottom') for t in ax.get_xticklabels()]
-    [t.set_ha('center') for t in ax.get_xticklabels()]
-    [t.set_va('center') for t in ax.get_zticklabels()]
-    [t.set_ha('center') for t in ax.get_zticklabels()]
+    [t.set_va("bottom") for t in ax.get_yticklabels()]
+    [t.set_ha("center") for t in ax.get_yticklabels()]
+    [t.set_va("bottom") for t in ax.get_xticklabels()]
+    [t.set_ha("center") for t in ax.get_xticklabels()]
+    [t.set_va("center") for t in ax.get_zticklabels()]
+    [t.set_ha("center") for t in ax.get_zticklabels()]
 
-    ax.xaxis._axinfo['tick']['inward_factor'] = 0
-    ax.xaxis._axinfo['tick']['outward_factor'] = 0.4
-    ax.yaxis._axinfo['tick']['inward_factor'] = 0
-    ax.yaxis._axinfo['tick']['outward_factor'] = 0.4
-    ax.zaxis._axinfo['tick']['inward_factor'] = 0
-    ax.zaxis._axinfo['tick']['outward_factor'] = 0.4
+    ax.xaxis._axinfo["tick"]["inward_factor"] = 0
+    ax.xaxis._axinfo["tick"]["outward_factor"] = 0.4
+    ax.yaxis._axinfo["tick"]["inward_factor"] = 0
+    ax.yaxis._axinfo["tick"]["outward_factor"] = 0.4
+    ax.zaxis._axinfo["tick"]["inward_factor"] = 0
+    ax.zaxis._axinfo["tick"]["outward_factor"] = 0.4
 
     # ax.xaxis._axinfo['juggled'] = (1, 0, 2)
     # ax.yaxis._axinfo['juggled'] = (1, 1, 2)
     # ax.zaxis._axinfo['juggled'] = (1, 2, 2)
-    ax.view_init(elev=15., azim=100.)
+    ax.view_init(elev=15.0, azim=100.0)
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.set_zlim(0, 1)

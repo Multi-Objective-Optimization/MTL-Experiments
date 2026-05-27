@@ -64,26 +64,74 @@ trong đó l̂ⱼ = rⱼlⱼ / Σrⱼ'lⱼ' là normalized weighted loss. μᵣ 
 ```
 EPOSearch/
 │
-├── README.md                    # Tổng quan (file này)
-├── mahapatra20a.pdf             # Bài báo gốc (ICML 2020)
-├── requirements.txt             # Python dependencies
+├── README.md                        # Tổng quan (file này)
+├── requirements.txt                 # Python dependencies
 │
-├── toy_experiments/             # Thí nghiệm trên bài toán MOO tổng hợp
-│   ├── README.md                # → Mục 5.1 + Phụ lục B, C
-│   ├── problems/                # Toy biobjective & triobjective problems
-│   └── solvers/                 # 4 solvers: LinScalar, MGDA, PMTL, EPO
+├── toy_experiments/                 # Thí nghiệm trên bài toán MOO tổng hợp (§5.1, Appx B,C)
+│   ├── README.md
+│   ├── compare_descent.py           # So sánh các hướng descent
+│   ├── compare_init.py              # So sánh khởi tạo khác nhau
+│   ├── compare_solvers.py           # So sánh tổng hợp các solver
+│   ├── empty_epo.py                 # Demo EPO trên bài toán rỗng
+│   ├── simulation.py                # Mô phỏng tìm Pareto front
+│   ├── simulation_vis.py            # Visualize kết quả mô phỏng
+│   ├── trace_pf.py                  # Trace Pareto front theo preference
+│   ├── problems/
+│   │   ├── __init__.py
+│   │   ├── toy_biobjective.py       # Bài toán 2 mục tiêu (từ Lin et al., 2019)
+│   │   └── toy_triobjective.py      # Bài toán 3 mục tiêu
+│   └── solvers/
+│       ├── epo_lp.py                # LP core của EPO Search
+│       ├── epo_search.py            # EPO Search solver
+│       ├── linscalar.py             # Linear Scalarization
+│       ├── min_norm_solvers.py      # Min-norm solver (MGDA, PyTorch)
+│       ├── min_norm_solvers_numpy.py# Min-norm solver (NumPy)
+│       ├── moo_mtl.py               # MOO-MTL / MGDA solver
+│       ├── pmtl.py                  # Pareto MTL solver
+│       └── pmtl_gpu.py              # Pareto MTL solver (GPU)
 │
-├── multiMNIST/                  # Phân loại ảnh đa nhiệm
-│   ├── README.md                # → Mục 5.2 Classification
-│   └── ...                      # LeNet + Multi-MNIST/Fashion datasets
+├── multiMNIST/                      # Phân loại ảnh đa nhiệm (§5.2 Classification)
+│   ├── README.md
+│   ├── epo_train.py                 # Training với EPO Search
+│   ├── individual_train.py          # Training từng task riêng lẻ
+│   ├── linscalar_train.py           # Training với Linear Scalarization
+│   ├── pmtl_train.py                # Training với Pareto MTL
+│   ├── display_results.py           # Visualize kết quả
+│   ├── models/
+│   │   └── model_lenet.py           # LeNet model cho Multi-MNIST
+│   ├── solvers/
+│   │   ├── epo_lp.py
+│   │   └── min_norm_solvers.py
+│   └── results/                     # Kết quả đã lưu (.pkl)
 │
-├── mtr/                         # Hồi quy đa mục tiêu
-│   ├── README.md                # → Mục 5.2 Regression
-│   └── ...                      # FNN + River Flow dataset (8 tasks)
+├── mtr/                             # Hồi quy đa mục tiêu (§5.2 Regression)
+│   ├── README.md
+│   ├── epo_train.py
+│   ├── individual_train.py
+│   ├── linscalar_train.py
+│   ├── pmtl_train.py
+│   ├── display_results.py
+│   ├── models/
+│   │   └── model_fnn.py             # FNN 64→32→16→8→8 cho River Flow
+│   ├── solvers/
+│   │   ├── epo_lp.py
+│   │   └── min_norm_solvers.py
+│   └── results/
 │
-└── mtc/                         # Phân loại đa nhiệm (nhiều task)
-    ├── README.md                # → Phụ lục C
-    └── ...                      # FNN + multi-task classification
+└── mtc/                             # Phân loại đa nhiệm nhiều task (Appx C)
+    ├── README.md
+    ├── epo_train.py
+    ├── individual_train.py
+    ├── linscalar_train.py
+    ├── pmtl_train.py
+    ├── display_results.py
+    ├── models/
+    │   └── model_fnn.py             # FNN cho multi-task classification
+    ├── solvers/
+    │   ├── epo_lp.py
+    │   └── min_norm_solvers.py
+    └── results/
+        └── indiv_emotion_fnn_200.pkl
 ```
 
 ---

@@ -1,14 +1,12 @@
-import numpy as np
 import os
-
-import torch
-from torch.autograd import Variable
-
-from models.model_fnn import RegressionModel, RegressionTrain
-
-from solvers.epo_lp import EPO_LP
-from time import time
 import pickle
+from time import time
+
+import numpy as np
+import torch
+from models.model_fnn import RegressionModel, RegressionTrain
+from solvers.epo_lp import EPO_LP
+from torch.autograd import Variable
 
 
 def getNumParams(params):
@@ -26,8 +24,8 @@ def train(dataset, niter, preference):
 
     # LOAD DATASET
     # ------------
-    if dataset == 'emotion':
-        with open('data/emotion.pkl', 'rb') as f:
+    if dataset == "emotion":
+        with open("data/emotion.pkl", "rb") as f:
             trainX, trainLabel, testX, testLabel = pickle.load(f)
 
     trainX = torch.from_numpy(trainX).float()
@@ -42,16 +40,14 @@ def train(dataset, niter, preference):
 
     batch_size = 50
     train_loader = torch.utils.data.DataLoader(
-        dataset=train_set,
-        batch_size=batch_size,
-        shuffle=True)
+        dataset=train_set, batch_size=batch_size, shuffle=True
+    )
     test_loader = torch.utils.data.DataLoader(
-        dataset=test_set,
-        batch_size=batch_size,
-        shuffle=False)
+        dataset=test_set, batch_size=batch_size, shuffle=False
+    )
 
-    print('==>>> total trainning batch number: {}'.format(len(train_loader)))
-    print('==>>> total testing batch number: {}'.format(len(test_loader)))
+    print("==>>> total trainning batch number: {}".format(len(train_loader)))
+    print("==>>> total testing batch number: {}".format(len(test_loader)))
     # ---------***---------
 
     # DEFINE MODEL
@@ -65,7 +61,7 @@ def train(dataset, niter, preference):
 
     # DEFINE OPTIMIZERS
     # -----------------
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=0.)
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=0.0)
     # ---------***---------
 
     # Instantia EPO Linear Program Solver
@@ -83,7 +79,7 @@ def train(dataset, niter, preference):
     # -----
     for t in range(niter):
         n_linscalar_adjusts = 0
-        descent = 0.
+        descent = 0.0
         model.train()
         for batch in train_loader:
             X = batch[0]
@@ -95,20 +91,24 @@ def train(dataset, niter, preference):
             # Obtain losses and gradients
             grads = {}
             losses = []
-            
+
             for i in range(n_tasks):
                 optimizer.zero_grad()
                 task_loss = model(X, ts)
                 losses.append(task_loss[i].data.cpu().numpy())
                 task_loss[i].backward()
 
-                # One can use scalable method proposed in the MOO-MTL paper 
+                # One can use scalable method proposed in the MOO-MTL paper
                 # for large scale problem; but we use the gradient
                 # of all parameters in this experiment.
                 grads[i] = []
                 for param in model.parameters():
                     if param.grad is not None:
-                        grads[i].append(Variable(param.grad.data.clone().flatten(), requires_grad=False))
+                        grads[i].append(
+                            Variable(
+                                param.grad.data.clone().flatten(), requires_grad=False
+                            )
+                        )
 
             grads_list = [torch.cat(grads[i]) for i in range(len(grads))]
             G = torch.stack(grads_list)
@@ -122,7 +122,7 @@ def train(dataset, niter, preference):
                     descent += 1
             except Exception as e:
                 alpha = None
-            if alpha is None:   # A patch for the issue in cvxpy
+            if alpha is None:  # A patch for the issue in cvxpy
                 alpha = preference / preference.sum()
                 n_linscalar_adjusts += 1
 
@@ -133,7 +133,9 @@ def train(dataset, niter, preference):
             # Optimization step
             optimizer.zero_grad()
             task_losses = model(X, ts)
-            weighted_loss = torch.sum(task_losses * alpha)  # * 5. * max(epo_lp.mu_rl, 0.2)
+            weighted_loss = torch.sum(
+                task_losses * alpha
+            )  # * 5. * max(epo_lp.mu_rl, 0.2)
             weighted_loss.backward()
             optimizer.step()
 
@@ -165,8 +167,9 @@ def train(dataset, niter, preference):
 
                 task_train_losses.append(average_train_loss.data.cpu().numpy())
 
-                print('{}/{}: train_loss={}'.format(
-                    t + 1, niter, task_train_losses[-1]))
+                print(
+                    "{}/{}: train_loss={}".format(t + 1, niter, task_train_losses[-1])
+                )
 
     result = {"training_losses": task_train_losses}
 
@@ -175,15 +178,15 @@ def train(dataset, niter, preference):
 
 def circle_points(K, min_angle=None, max_angle=None):
     # generate evenly distributed preference vector
-    ang0 = np.pi / 20. if min_angle is None else min_angle
-    ang1 = np.pi * 9 / 20. if max_angle is None else max_angle
+    ang0 = np.pi / 20.0 if min_angle is None else min_angle
+    ang1 = np.pi * 9 / 20.0 if max_angle is None else max_angle
     angles = np.linspace(ang0, ang1, K)
     x = np.cos(angles)
     y = np.sin(angles)
     return np.c_[x, y]
 
 
-def run(dataset='emotion', niter=100, npref=5):
+def run(dataset="emotion", niter=100, npref=5):
     """
     run Pareto MTL
     """
@@ -202,4 +205,4 @@ def run(dataset='emotion', niter=100, npref=5):
     print(f"**** Time taken for {dataset} = {time() - start_time}")
 
 
-run(dataset='emotion', niter=200, npref=10)
+run(dataset="emotion", niter=200, npref=10)

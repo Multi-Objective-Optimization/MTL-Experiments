@@ -8,7 +8,7 @@ class RegressionTrain(torch.nn.Module):
         super(RegressionTrain, self).__init__()
 
         self.model = model
-        self.loss = nn.BCELoss(reduction='none')
+        self.loss = nn.BCELoss(reduction="none")
 
     def forward(self, x, ts):
         ys = self.model(x)
@@ -37,7 +37,7 @@ class RegressionModel(torch.nn.Module):
         self.layers.append(nn.Linear(n_neurons, n_tasks))
 
         for i in range(self.n_tasks):
-            setattr(self, 'task_{}'.format(i), nn.Linear(50, 10))
+            setattr(self, "task_{}".format(i), nn.Linear(50, 10))
 
     def forward(self, x, i=None):
         y = x

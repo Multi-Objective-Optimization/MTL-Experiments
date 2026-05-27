@@ -1,14 +1,12 @@
-import numpy as np
 import os
+import pickle
+from time import time
 
+import numpy as np
 import torch
 import torch.utils.data
-
-from models.model_lenet import RegressionModel, RegressionTrain
 from model_resnet import MnistResNet, RegressionTrainResNet
-
-from time import time
-import pickle
+from models.model_lenet import RegressionModel, RegressionTrain
 
 
 def train(dataset, base_model, niter, preference):
@@ -19,18 +17,18 @@ def train(dataset, base_model, niter, preference):
     # LOAD DATASET
     # ------------
     # MultiMNIST: multi_mnist.pickle
-    if dataset == 'mnist':
-        with open('data/multi_mnist.pickle', 'rb') as f:
+    if dataset == "mnist":
+        with open("data/multi_mnist.pickle", "rb") as f:
             trainX, trainLabel, testX, testLabel = pickle.load(f)
 
     # MultiFashionMNIST: multi_fashion.pickle
-    if dataset == 'fashion':
-        with open('data/multi_fashion.pickle', 'rb') as f:
+    if dataset == "fashion":
+        with open("data/multi_fashion.pickle", "rb") as f:
             trainX, trainLabel, testX, testLabel = pickle.load(f)
 
     # Multi-(Fashion+MNIST): multi_fashion_and_mnist.pickle
-    if dataset == 'fashion_and_mnist':
-        with open('data/multi_fashion_and_mnist.pickle', 'rb') as f:
+    if dataset == "fashion_and_mnist":
+        with open("data/multi_fashion_and_mnist.pickle", "rb") as f:
             trainX, trainLabel, testX, testLabel = pickle.load(f)
 
     trainX = torch.from_numpy(trainX.reshape(120000, 1, 36, 36)).float()
@@ -43,23 +41,21 @@ def train(dataset, base_model, niter, preference):
 
     batch_size = 256
     train_loader = torch.utils.data.DataLoader(
-        dataset=train_set,
-        batch_size=batch_size,
-        shuffle=True)
+        dataset=train_set, batch_size=batch_size, shuffle=True
+    )
     test_loader = torch.utils.data.DataLoader(
-        dataset=test_set,
-        batch_size=batch_size,
-        shuffle=False)
+        dataset=test_set, batch_size=batch_size, shuffle=False
+    )
 
-    print('==>>> total trainning batch number: {}'.format(len(train_loader)))
-    print('==>>> total testing batch number: {}'.format(len(test_loader)))
+    print("==>>> total trainning batch number: {}".format(len(train_loader)))
+    print("==>>> total testing batch number: {}".format(len(test_loader)))
     # ---------***---------
 
     # DEFINE MODEL
     # ---------------------
-    if base_model == 'lenet':
+    if base_model == "lenet":
         model = RegressionTrain(RegressionModel(n_tasks), preference)
-    if base_model == 'resnet18':
+    if base_model == "resnet18":
         model = RegressionTrainResNet(MnistResNet(n_tasks), preference)
     model.randomize()
     if torch.cuda.is_available():
@@ -69,15 +65,16 @@ def train(dataset, base_model, niter, preference):
     # DEFINE OPTIMIZERS
     # -----------------
     # Choose different optimizers for different base model
-    if base_model == 'lenet':
-        optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=0.)
+    if base_model == "lenet":
+        optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=0.0)
         # scheduler = torch.optim.lr_scheduler.MultiStepLR(
         #     optimizer, milestones=[15, 30, 45, 60, 75, 90], gamma=0.5)
 
-    if base_model == 'resnet18':
+    if base_model == "resnet18":
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
         scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer, milestones=[10, 20], gamma=0.1)
+            optimizer, milestones=[10, 20], gamma=0.1
+        )
     # ---------***---------
 
     # CONTAINERS FOR KEEPING TRACK OF PROGRESS
@@ -91,7 +88,7 @@ def train(dataset, base_model, niter, preference):
     for t in range(niter + 1):
         # scheduler.step()
         model.train()
-        for (it, batch) in enumerate(train_loader):
+        for it, batch in enumerate(train_loader):
             X = batch[0]
             ts = batch[1]
             if torch.cuda.is_available():
@@ -105,7 +102,9 @@ def train(dataset, base_model, niter, preference):
             # Optimization step
             optimizer.zero_grad()
             task_losses = model(X, ts)
-            weighted_loss = torch.sum(task_losses * alpha)  # * 5. * max(epo_lp.mu_rl, 0.2)
+            weighted_loss = torch.sum(
+                task_losses * alpha
+            )  # * 5. * max(epo_lp.mu_rl, 0.2)
             weighted_loss.backward()
             optimizer.step()
 
@@ -119,7 +118,7 @@ def train(dataset, base_model, niter, preference):
                 correct1_train = 0
                 correct2_train = 0
 
-                for (it, batch) in enumerate(test_loader):
+                for it, batch in enumerate(test_loader):
 
                     X = batch[0]
                     ts = batch[1]
@@ -134,8 +133,12 @@ def train(dataset, base_model, niter, preference):
                     correct1_train += output1.eq(ts[:, 0].view_as(output1)).sum().item()
                     correct2_train += output2.eq(ts[:, 1].view_as(output2)).sum().item()
 
-                train_acc = np.stack([1.0 * correct1_train / len(train_loader.dataset),
-                                      1.0 * correct2_train / len(train_loader.dataset)])
+                train_acc = np.stack(
+                    [
+                        1.0 * correct1_train / len(train_loader.dataset),
+                        1.0 * correct2_train / len(train_loader.dataset),
+                    ]
+                )
 
                 total_train_loss = torch.stack(total_train_loss)
                 average_train_loss = torch.mean(total_train_loss, dim=0)
@@ -146,35 +149,41 @@ def train(dataset, base_model, niter, preference):
                 task_train_losses.append(average_train_loss.data.cpu().numpy())
                 train_accs.append(train_acc)
 
-                print('{}/{}: train_loss={}, train_acc={}'.format(
-                    t + 1, niter, task_train_losses[-1], train_accs[-1]))
+                print(
+                    "{}/{}: train_loss={}, train_acc={}".format(
+                        t + 1, niter, task_train_losses[-1], train_accs[-1]
+                    )
+                )
 
-    torch.save(model.model.state_dict(),
-               f'./saved_model/{dataset}_{base_model}_niter_{niter}.pickle')
+    torch.save(
+        model.model.state_dict(),
+        f"./saved_model/{dataset}_{base_model}_niter_{niter}.pickle",
+    )
 
-    result = {"training_losses": task_train_losses,
-              "training_accuracies": train_accs}
+    result = {"training_losses": task_train_losses, "training_accuracies": train_accs}
 
     return result
 
 
 def circle_points(K, min_angle=None, max_angle=None):
     # generate evenly distributed preference vector
-    ang0 = np.pi / 20. if min_angle is None else min_angle
-    ang1 = np.pi * 9 / 20. if max_angle is None else max_angle
+    ang0 = np.pi / 20.0 if min_angle is None else min_angle
+    ang1 = np.pi * 9 / 20.0 if max_angle is None else max_angle
     angles = np.linspace(ang0, ang1, K)
     x = np.cos(angles)
     y = np.sin(angles)
     return np.c_[x, y]
 
 
-def run(dataset='mnist', base_model='lenet', niter=100, npref=5):
+def run(dataset="mnist", base_model="lenet", niter=100, npref=5):
     """
     run Pareto MTL
     """
     start_time = time()
     init_weight = np.array([0.5, 0.5])
-    preferences = circle_points(npref, min_angle=0.0001*np.pi/2, max_angle=0.9999*np.pi/2)  # preference
+    preferences = circle_points(
+        npref, min_angle=0.0001 * np.pi / 2, max_angle=0.9999 * np.pi / 2
+    )  # preference
     results = dict()
     out_file_prefix = f"linscalar_{dataset}_{base_model}_{niter}_{npref}_from_0-"
     for i, pref in enumerate(preferences[::-1]):
@@ -188,9 +197,9 @@ def run(dataset='mnist', base_model='lenet', niter=100, npref=5):
     print(f"**** Time taken for {dataset} = {time() - start_time}")
 
 
-run(dataset='mnist', base_model='lenet', niter=100, npref=5)
-run(dataset='fashion', base_model='lenet', niter=100, npref=5)
-run(dataset='fashion_and_mnist', base_model='lenet', niter=100, npref=5)
+run(dataset="mnist", base_model="lenet", niter=100, npref=5)
+run(dataset="fashion", base_model="lenet", niter=100, npref=5)
+run(dataset="fashion_and_mnist", base_model="lenet", niter=100, npref=5)
 
 # run(dataset = 'mnist', base_model = 'resnet18', niter = 20, npref = 5)
 # run(dataset = 'fashion', base_model = 'resnet18', niter = 20, npref = 5)

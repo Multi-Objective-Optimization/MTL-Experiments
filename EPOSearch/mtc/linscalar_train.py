@@ -1,13 +1,11 @@
-import numpy as np
 import os
+import pickle
+from time import time
 
+import numpy as np
 import torch
 import torch.utils.data
-
 from models.model_fnn import RegressionModel, RegressionTrain
-
-from time import time
-import pickle
 
 
 def train(dataset, niter, preference):
@@ -16,8 +14,8 @@ def train(dataset, niter, preference):
 
     # LOAD DATASET
     # ------------
-    if dataset == 'emotion':
-        with open('data/emotion.pkl', 'rb') as f:
+    if dataset == "emotion":
+        with open("data/emotion.pkl", "rb") as f:
             trainX, trainLabel, testX, testLabel = pickle.load(f)
 
     trainX = torch.from_numpy(trainX).float()
@@ -32,16 +30,14 @@ def train(dataset, niter, preference):
 
     batch_size = 256
     train_loader = torch.utils.data.DataLoader(
-        dataset=train_set,
-        batch_size=batch_size,
-        shuffle=True)
+        dataset=train_set, batch_size=batch_size, shuffle=True
+    )
     test_loader = torch.utils.data.DataLoader(
-        dataset=test_set,
-        batch_size=batch_size,
-        shuffle=False)
+        dataset=test_set, batch_size=batch_size, shuffle=False
+    )
 
-    print('==>>> total trainning batch number: {}'.format(len(train_loader)))
-    print('==>>> total testing batch number: {}'.format(len(test_loader)))
+    print("==>>> total trainning batch number: {}".format(len(train_loader)))
+    print("==>>> total testing batch number: {}".format(len(test_loader)))
     # ---------***---------
 
     # DEFINE MODEL
@@ -55,7 +51,7 @@ def train(dataset, niter, preference):
     # DEFINE OPTIMIZERS
     # -----------------
     # Choose different optimizers for different base model
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=0.)
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=0.0)
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(
     #     optimizer, milestones=[15, 30, 45, 60, 75, 90], gamma=0.8)
     # ---------***---------
@@ -71,7 +67,7 @@ def train(dataset, niter, preference):
     for t in range(niter + 1):
         # scheduler.step()
         model.train()
-        for (it, batch) in enumerate(train_loader):
+        for it, batch in enumerate(train_loader):
             X = batch[0]
             ts = batch[1]
             if torch.cuda.is_available():
@@ -85,7 +81,9 @@ def train(dataset, niter, preference):
             # Optimization step
             optimizer.zero_grad()
             task_losses = model(X, ts)
-            weighted_loss = torch.sum(task_losses * alpha)  # * 5. * max(epo_lp.mu_rl, 0.2)
+            weighted_loss = torch.sum(
+                task_losses * alpha
+            )  # * 5. * max(epo_lp.mu_rl, 0.2)
             weighted_loss.backward()
             optimizer.step()
 
@@ -95,7 +93,7 @@ def train(dataset, niter, preference):
             with torch.no_grad():
                 total_train_loss = []
 
-                for (it, batch) in enumerate(test_loader):
+                for it, batch in enumerate(test_loader):
 
                     X = batch[0]
                     ts = batch[1]
@@ -114,8 +112,9 @@ def train(dataset, niter, preference):
 
                 task_train_losses.append(average_train_loss.data.cpu().numpy())
 
-                print('{}/{}: train_loss={}'.format(
-                    t + 1, niter, task_train_losses[-1]))
+                print(
+                    "{}/{}: train_loss={}".format(t + 1, niter, task_train_losses[-1])
+                )
 
     result = {"training_losses": task_train_losses}
 
@@ -124,15 +123,15 @@ def train(dataset, niter, preference):
 
 def circle_points(K, min_angle=None, max_angle=None):
     # generate evenly distributed preference vector
-    ang0 = np.pi / 20. if min_angle is None else min_angle
-    ang1 = np.pi * 9 / 20. if max_angle is None else max_angle
+    ang0 = np.pi / 20.0 if min_angle is None else min_angle
+    ang1 = np.pi * 9 / 20.0 if max_angle is None else max_angle
     angles = np.linspace(ang0, ang1, K)
     x = np.cos(angles)
     y = np.sin(angles)
     return np.c_[x, y]
 
 
-def run(dataset='emotion', niter=100, npref=5):
+def run(dataset="emotion", niter=100, npref=5):
     """
     run Pareto MTL
     """
@@ -151,4 +150,4 @@ def run(dataset='emotion', niter=100, npref=5):
     print(f"**** Time taken for {dataset} = {time() - start_time}")
 
 
-run(dataset='emotion', niter=200, npref=10)
+run(dataset="emotion", niter=200, npref=10)

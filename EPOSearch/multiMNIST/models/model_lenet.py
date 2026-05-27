@@ -7,7 +7,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from torch.nn.modules.loss import CrossEntropyLoss
 
 
@@ -17,8 +16,7 @@ class RegressionTrain(torch.nn.Module):
         super(RegressionTrain, self).__init__()
 
         self.model = model
-        self.weights = torch.nn.Parameter(
-            torch.from_numpy(init_weight).float())
+        self.weights = torch.nn.Parameter(torch.from_numpy(init_weight).float())
         self.ce_loss = CrossEntropyLoss()
 
     def forward(self, x, ts, i=None):
@@ -53,7 +51,7 @@ class RegressionModel(torch.nn.Module):
         self.fc1 = nn.Linear(5 * 5 * 20, 50)
 
         for i in range(self.n_tasks):
-            setattr(self, 'task_{}'.format(i), nn.Linear(50, 10))
+            setattr(self, "task_{}".format(i), nn.Linear(50, 10))
 
     def forward(self, x, i=None):
         x = F.relu(self.conv1(x))
@@ -64,12 +62,12 @@ class RegressionModel(torch.nn.Module):
         x = F.relu(self.fc1(x))
 
         if i is not None:
-            layer_i = getattr(self, 'task_{}'.format(i))
+            layer_i = getattr(self, "task_{}".format(i))
             return layer_i(x)
 
         outs = []
         for i in range(self.n_tasks):
-            layer = getattr(self, 'task_{}'.format(i))
+            layer = getattr(self, "task_{}".format(i))
             outs.append(layer(x))
 
         return torch.stack(outs, dim=1)

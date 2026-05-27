@@ -70,16 +70,19 @@ Sinh ra biểu đồ so sánh accuracy và loss theo preference vectors.
 
 ```
 mtc/
-├── model_fnn.py            # Kiến trúc Feed-forward Neural Network
+├── README.md
 ├── individual_train.py     # Training baseline (individual tasks)
 ├── linscalar_train.py      # Training với Linear Scalarization
 ├── epo_train.py            # Training với EPO Search
 ├── pmtl_train.py           # Training với Pareto MTL
-├── epo_lp.py               # Giải LP tìm hướng non-dominating (EPO core)
-├── min_norm_solvers.py     # Solver tìm hướng min-norm
 ├── display_results.py      # Visualize và so sánh kết quả
-├── latex_utils.py          # Tiện ích xuất bảng LaTeX
-└── results/                # Thư mục lưu file .pkl kết quả
+├── models/
+│   └── model_fnn.py        # Kiến trúc Feed-forward Neural Network
+├── solvers/
+│   ├── epo_lp.py           # Giải LP tìm hướng non-dominating (EPO core)
+│   └── min_norm_solvers.py # Solver tìm hướng min-norm
+└── results/
+    └── indiv_emotion_fnn_200.pkl  # Kết quả Individual training đã lưu
 ```
 
 ---
