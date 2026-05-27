@@ -1,6 +1,6 @@
 import os
-import sys
 import pickle
+import sys
 
 import numpy as np
 import torch
@@ -38,10 +38,16 @@ def get_d_paretomtl_init(grads, value, weights, i):
         sol = torch.ones(1).cuda().float()
     else:
         vec = torch.matmul(w[idx], grads)
-        sol, _ = MinNormSolver.find_min_norm_element([[vec[t]] for t in range(len(vec))])
+        sol, _ = MinNormSolver.find_min_norm_element(
+            [[vec[t]] for t in range(len(vec))]
+        )
 
-    weight0 = torch.sum(torch.stack([sol[j] * w[idx][j, 0] for j in torch.arange(0, torch.sum(idx))]))
-    weight1 = torch.sum(torch.stack([sol[j] * w[idx][j, 1] for j in torch.arange(0, torch.sum(idx))]))
+    weight0 = torch.sum(
+        torch.stack([sol[j] * w[idx][j, 0] for j in torch.arange(0, torch.sum(idx))])
+    )
+    weight1 = torch.sum(
+        torch.stack([sol[j] * w[idx][j, 1] for j in torch.arange(0, torch.sum(idx))])
+    )
     weight = torch.stack([weight0, weight1])
 
     return flag, weight
@@ -57,14 +63,24 @@ def get_d_paretomtl(grads, value, weights, i):
     idx = gx > 0
 
     if torch.sum(idx) <= 0:
-        sol, _ = MinNormSolver.find_min_norm_element([[grads[t]] for t in range(len(grads))])
+        sol, _ = MinNormSolver.find_min_norm_element(
+            [[grads[t]] for t in range(len(grads))]
+        )
         return torch.tensor(sol).cuda().float()
 
     vec = torch.cat((grads, torch.matmul(w[idx], grads)))
     sol, nd = MinNormSolver.find_min_norm_element([[vec[t]] for t in range(len(vec))])
 
-    weight0 = sol[0] + torch.sum(torch.stack([sol[j] * w[idx][j - 2, 0] for j in torch.arange(2, 2 + torch.sum(idx))]))
-    weight1 = sol[1] + torch.sum(torch.stack([sol[j] * w[idx][j - 2, 1] for j in torch.arange(2, 2 + torch.sum(idx))]))
+    weight0 = sol[0] + torch.sum(
+        torch.stack(
+            [sol[j] * w[idx][j - 2, 0] for j in torch.arange(2, 2 + torch.sum(idx))]
+        )
+    )
+    weight1 = sol[1] + torch.sum(
+        torch.stack(
+            [sol[j] * w[idx][j - 2, 1] for j in torch.arange(2, 2 + torch.sum(idx))]
+        )
+    )
     weight = torch.stack([weight0, weight1])
 
     return weight
@@ -75,11 +91,11 @@ def train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_di
     ref_vec = torch.tensor(circle_points([1], [npref])[0]).cuda().float()
 
     data_files = {
-        'mnist': 'multi_mnist.pickle',
-        'fashion': 'multi_fashion.pickle',
-        'fashion_and_mnist': 'multi_fashion_and_mnist.pickle',
+        "mnist": "multi_mnist.pickle",
+        "fashion": "multi_fashion.pickle",
+        "fashion_and_mnist": "multi_fashion_and_mnist.pickle",
     }
-    with open(os.path.join(data_dir, data_files[dataset]), 'rb') as f:
+    with open(os.path.join(data_dir, data_files[dataset]), "rb") as f:
         trainX, trainLabel, testX, testLabel = pickle.load(f)
 
     trainX = torch.from_numpy(trainX.reshape(120000, 1, 36, 36)).float()
@@ -88,31 +104,33 @@ def train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_di
     testLabel = torch.from_numpy(testLabel).long()
 
     train_loader = torch.utils.data.DataLoader(
-        torch.utils.data.TensorDataset(trainX, trainLabel),
-        batch_size=256, shuffle=True)
+        torch.utils.data.TensorDataset(trainX, trainLabel), batch_size=256, shuffle=True
+    )
     test_loader = torch.utils.data.DataLoader(
-        torch.utils.data.TensorDataset(testX, testLabel),
-        batch_size=256, shuffle=False)
+        torch.utils.data.TensorDataset(testX, testLabel), batch_size=256, shuffle=False
+    )
 
-    print('==>>> total training batch number: {}'.format(len(train_loader)))
-    print('==>>> total testing batch number: {}'.format(len(test_loader)))
+    print("==>>> total training batch number: {}".format(len(train_loader)))
+    print("==>>> total testing batch number: {}".format(len(test_loader)))
 
-    if model == 'lenet':
+    if model == "lenet":
         net = MTLTrainer(LeNet(n_tasks), init_weight)
-    elif model == 'resnet18':
+    elif model == "resnet18":
         net = MTLTrainer(ResNet18(n_tasks), init_weight)
 
     if torch.cuda.is_available():
         net.cuda()
 
-    if model == 'lenet':
+    if model == "lenet":
         optimizer = torch.optim.SGD(net.parameters(), lr=1e-3, momentum=0.9)
         scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer, milestones=[15, 30, 45, 60, 75, 90], gamma=0.5)
-    elif model == 'resnet18':
+            optimizer, milestones=[15, 30, 45, 60, 75, 90], gamma=0.5
+        )
+    elif model == "resnet18":
         optimizer = torch.optim.Adam(net.parameters(), lr=1e-3)
         scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer, milestones=[10, 20], gamma=0.1)
+            optimizer, milestones=[10, 20], gamma=0.1
+        )
 
     weights = []
     task_train_losses = []
@@ -121,12 +139,14 @@ def train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_di
     test_accs = []
 
     os.makedirs(save_dir, exist_ok=True)
-    log_path = os.path.join(save_dir, '{}_{}_result.txt'.format(dataset, model))
+    log_path = os.path.join(save_dir, "{}_{}_result.txt".format(dataset, model))
 
-    ref_vec_str = ', '.join(map(str, ref_vec[pref_idx].cpu().numpy()))
-    print('Preference Vector ({}/{}): {}'.format(pref_idx + 1, npref, ref_vec_str))
-    with open(log_path, 'a') as f:
-        f.write('Preference Vector ({}/{}): {}\n'.format(pref_idx + 1, npref, ref_vec_str))
+    ref_vec_str = ", ".join(map(str, ref_vec[pref_idx].cpu().numpy()))
+    print("Preference Vector ({}/{}): {}".format(pref_idx + 1, npref, ref_vec_str))
+    with open(log_path, "a") as f:
+        f.write(
+            "Preference Vector ({}/{}): {}\n".format(pref_idx + 1, npref, ref_vec_str)
+        )
 
     # Initialization phase: run at most 2 epochs to find a feasible starting point.
     # The for/else construct breaks out of both loops once feasibility is found.
@@ -150,13 +170,19 @@ def train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_di
                 grads[i] = []
                 for param in net.parameters():
                     if param.grad is not None:
-                        grads[i].append(Variable(param.grad.data.clone().flatten(), requires_grad=False))
+                        grads[i].append(
+                            Variable(
+                                param.grad.data.clone().flatten(), requires_grad=False
+                            )
+                        )
 
             grads_list = [torch.cat(grads[i]) for i in range(len(grads))]
             grads = torch.stack(grads_list)
 
             losses_vec = torch.stack(losses_vec)
-            flag, weight_vec = get_d_paretomtl_init(grads, losses_vec, ref_vec, pref_idx)
+            flag, weight_vec = get_d_paretomtl_init(
+                grads, losses_vec, ref_vec, pref_idx
+            )
 
             if flag:
                 print("feasible solution is obtained.")
@@ -199,7 +225,11 @@ def train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_di
                 grads[i] = []
                 for param in net.parameters():
                     if param.grad is not None:
-                        grads[i].append(Variable(param.grad.data.clone().flatten(), requires_grad=False))
+                        grads[i].append(
+                            Variable(
+                                param.grad.data.clone().flatten(), requires_grad=False
+                            )
+                        )
 
             grads_list = [torch.cat(grads[i]) for i in range(len(grads))]
             grads = torch.stack(grads_list)
@@ -241,10 +271,12 @@ def train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_di
                 correct1_train += output1.eq(ts[:, 0].view_as(output1)).sum().item()
                 correct2_train += output2.eq(ts[:, 1].view_as(output2)).sum().item()
 
-            train_acc = np.stack([
-                1.0 * correct1_train / len(train_loader.dataset),
-                1.0 * correct2_train / len(train_loader.dataset)
-            ])
+            train_acc = np.stack(
+                [
+                    1.0 * correct1_train / len(train_loader.dataset),
+                    1.0 * correct2_train / len(train_loader.dataset),
+                ]
+            )
 
             total_train_loss = torch.stack(total_train_loss)
             average_train_loss = torch.mean(total_train_loss, dim=0)
@@ -267,10 +299,12 @@ def train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_di
                 correct1_test += output1.eq(ts[:, 0].view_as(output1)).sum().item()
                 correct2_test += output2.eq(ts[:, 1].view_as(output2)).sum().item()
 
-            test_acc = np.stack([
-                1.0 * correct1_test / len(test_loader.dataset),
-                1.0 * correct2_test / len(test_loader.dataset)
-            ])
+            test_acc = np.stack(
+                [
+                    1.0 * correct1_test / len(test_loader.dataset),
+                    1.0 * correct2_test / len(test_loader.dataset),
+                ]
+            )
             total_test_loss = torch.stack(total_test_loss)
             average_test_loss = torch.mean(total_test_loss, dim=0)
 
@@ -281,29 +315,37 @@ def train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_di
             test_accs.append(test_acc)
             weights.append(weight_vec.cpu().numpy())
 
-            log_str = '{}/{}: weights={}, train_loss={}, train_acc={}, test_loss={}, test_acc={}'.format(
-                t + 1, niter, weights[-1], task_train_losses[-1], train_accs[-1],
-                task_test_losses[-1], test_accs[-1])
+            log_str = "{}/{}: weights={}, train_loss={}, train_acc={}, test_loss={}, test_acc={}".format(
+                t + 1,
+                niter,
+                weights[-1],
+                task_train_losses[-1],
+                train_accs[-1],
+                task_test_losses[-1],
+                test_accs[-1],
+            )
             print(log_str)
-            with open(log_path, 'a') as f:
-                f.write(log_str + '\n')
+            with open(log_path, "a") as f:
+                f.write(log_str + "\n")
 
     save_path = os.path.join(
         save_dir,
-        '{}_{}_niter{}_npref{}_pref{}.pkl'.format(dataset, model, niter, npref, pref_idx)
+        "{}_{}_niter{}_npref{}_pref{}.pkl".format(
+            dataset, model, niter, npref, pref_idx
+        ),
     )
     torch.save(net.model.state_dict(), save_path)
 
 
-def run(dataset, model, niter, npref, data_dir='data', save_dir='saved_model'):
+def run(dataset, model, niter, npref, data_dir="data", save_dir="saved_model"):
     """Train ParetoMTL for all preference vectors."""
     init_weight = np.array([0.5, 0.5])
     for pref_idx in range(npref):
         train(dataset, model, niter, npref, init_weight, pref_idx, data_dir, save_dir)
 
 
-if __name__ == '__main__':
-    config_path = sys.argv[1] if len(sys.argv) > 1 else 'configs/train.yaml'
+if __name__ == "__main__":
+    config_path = sys.argv[1] if len(sys.argv) > 1 else "configs/train.yaml"
     with open(config_path) as f:
         cfg = yaml.safe_load(f)
     run(**cfg)

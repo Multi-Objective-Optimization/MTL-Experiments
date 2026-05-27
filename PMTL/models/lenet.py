@@ -11,7 +11,7 @@ class LeNet(nn.Module):
         self.conv2 = nn.Conv2d(10, 20, 5, 1)
         self.fc1 = nn.Linear(5 * 5 * 20, 50)
         for i in range(self.n_tasks):
-            setattr(self, 'task_{}'.format(i), nn.Linear(50, 10))
+            setattr(self, "task_{}".format(i), nn.Linear(50, 10))
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -22,6 +22,6 @@ class LeNet(nn.Module):
         x = F.relu(self.fc1(x))
         outs = []
         for i in range(self.n_tasks):
-            layer = getattr(self, 'task_{}'.format(i))
+            layer = getattr(self, "task_{}".format(i))
             outs.append(layer(x))
         return torch.stack(outs, dim=1)
