@@ -1,10 +1,11 @@
 # Adapted from: https://github.com/CSAILVision/semantic-segmentation-pytorch/blob/master/models/models.py
 
+import math
 import os
 import sys
+
 import torch
 import torch.nn as nn
-import math
 
 try:
     from urllib import urlretrieve
@@ -12,19 +13,20 @@ except ImportError:
     from urllib.request import urlretrieve
 
 
-__all__ = ['ResNet', 'resnet50', 'resnet101']
+__all__ = ["ResNet", "resnet50", "resnet101"]
 
 
 model_urls = {
-    'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
-    'resnet101': 'http://sceneparsing.csail.mit.edu/model/pretrained_resnet/resnet101-imagenet.pth'
+    "resnet50": "https://download.pytorch.org/models/resnet50-19c8e357.pth",
+    "resnet101": "http://sceneparsing.csail.mit.edu/model/pretrained_resnet/resnet101-imagenet.pth",
 }
 
 
 def conv3x3(in_planes, out_planes, stride=1):
     "3x3 convolution with padding"
-    return nn.Conv2d(in_planes, out_planes, kernel_size=7, stride=stride,
-                     padding=1, bias=False)
+    return nn.Conv2d(
+        in_planes, out_planes, kernel_size=7, stride=stride, padding=1, bias=False
+    )
 
 
 class BasicBlock(nn.Module):
@@ -66,11 +68,12 @@ class Bottleneck(nn.Module):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(int(planes))
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
-                               padding=1, bias=False)
+        self.conv2 = nn.Conv2d(
+            planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
+        )
         self.bn2 = nn.BatchNorm2d(int(planes))
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(int(planes)*4)
+        self.bn3 = nn.BatchNorm2d(int(planes) * 4)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
@@ -118,7 +121,7 @@ class ResNet(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
+                m.weight.data.normal_(0, math.sqrt(2.0 / n))
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
@@ -127,9 +130,14 @@ class ResNet(nn.Module):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, planes * block.expansion,
-                          kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(int(planes)*block.expansion),
+                nn.Conv2d(
+                    self.inplanes,
+                    planes * block.expansion,
+                    kernel_size=1,
+                    stride=stride,
+                    bias=False,
+                ),
+                nn.BatchNorm2d(int(planes) * block.expansion),
             )
 
         layers = []
@@ -164,7 +172,7 @@ def resnet50(pretrained=False, **kwargs):
     """
     model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
     if pretrained:
-        model.load_state_dict(load_url(model_urls['resnet50']), strict=False)
+        model.load_state_dict(load_url(model_urls["resnet50"]), strict=False)
     return model
 
 
@@ -176,14 +184,14 @@ def resnet101(pretrained=False, **kwargs):
     """
     model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
     if pretrained:
-        model.load_state_dict(load_url(model_urls['resnet101']), strict=False)
+        model.load_state_dict(load_url(model_urls["resnet101"]), strict=False)
     return model
 
 
-def load_url(url, model_dir='./pretrained', map_location=None):
+def load_url(url, model_dir="./pretrained", map_location=None):
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
-    filename = url.split('/')[-1]
+    filename = url.split("/")[-1]
     cached_file = os.path.join(model_dir, filename)
     if not os.path.exists(cached_file):
         sys.stderr.write('Downloading: "{}" to {}\n'.format(url, cached_file))

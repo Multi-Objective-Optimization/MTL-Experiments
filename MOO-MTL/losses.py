@@ -1,10 +1,11 @@
 from functools import partial
+
 import torch.nn.functional as F
 
 
 def nll(pred, gt, val=False):
     if val:
-        return F.nll_loss(pred, gt, reduction='sum')
+        return F.nll_loss(pred, gt, reduction="sum")
     else:
         return F.nll_loss(pred, gt)
 
@@ -25,8 +26,9 @@ def cross_entropy2d(input, target, weight=None, val=False, ignore_index=250):
     target = target[valid_mask]
     if target.numel() < 1:
         return input.sum() * 0.0
-    loss = F.nll_loss(log_p, target, ignore_index=ignore_index,
-                      weight=weight, reduction='sum')
+    loss = F.nll_loss(
+        log_p, target, ignore_index=ignore_index, weight=weight, reduction="sum"
+    )
     if size_average:
         loss /= valid_mask.sum()
     return loss
@@ -41,7 +43,7 @@ def l1_loss_depth(input, target, val=False):
     if mask.sum() < 1:
         return input.sum() * 0.0
 
-    lss = F.l1_loss(input[mask], target[mask], reduction='sum')
+    lss = F.l1_loss(input[mask], target[mask], reduction="sum")
     if size_average:
         lss = lss / mask.sum()
     return lss
@@ -56,26 +58,26 @@ def l1_loss_instance(input, target, val=False, ignore_index=250):
     if mask.sum() < 1:
         return input.sum() * 0.0
 
-    lss = F.l1_loss(input[mask], target[mask], reduction='sum')
+    lss = F.l1_loss(input[mask], target[mask], reduction="sum")
     if size_average:
         lss = lss / mask.sum()
     return lss
 
 
 def get_loss(cfg):
-    if 'mnist' in cfg['dataset']:
-        return {t: nll for t in cfg['tasks']}
+    if "mnist" in cfg["dataset"]:
+        return {t: nll for t in cfg["tasks"]}
 
-    if 'cityscapes' in cfg['dataset']:
-        ignore_index = cfg.get('ignore_index', 250)
+    if "cityscapes" in cfg["dataset"]:
+        ignore_index = cfg.get("ignore_index", 250)
         loss_fn = {}
-        if 'S' in cfg['tasks']:
-            loss_fn['S'] = partial(cross_entropy2d, ignore_index=ignore_index)
-        if 'I' in cfg['tasks']:
-            loss_fn['I'] = partial(l1_loss_instance, ignore_index=ignore_index)
-        if 'D' in cfg['tasks']:
-            loss_fn['D'] = l1_loss_depth
+        if "S" in cfg["tasks"]:
+            loss_fn["S"] = partial(cross_entropy2d, ignore_index=ignore_index)
+        if "I" in cfg["tasks"]:
+            loss_fn["I"] = partial(l1_loss_instance, ignore_index=ignore_index)
+        if "D" in cfg["tasks"]:
+            loss_fn["D"] = l1_loss_depth
         return loss_fn
 
-    if 'celeba' in cfg['dataset']:
-        return {t: nll for t in cfg['tasks']}
+    if "celeba" in cfg["dataset"]:
+        return {t: nll for t in cfg["tasks"]}

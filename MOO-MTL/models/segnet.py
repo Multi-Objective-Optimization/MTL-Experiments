@@ -70,11 +70,7 @@ class SegnetEncoder(nn.Module):
         return [up2, indices_1, unpool_shape1], masks
 
     def init_vgg16_params(self, vgg16):
-        blocks = [self.down1,
-                  self.down2,
-                  self.down3,
-                  self.down4,
-                  self.down5]
+        blocks = [self.down1, self.down2, self.down3, self.down4, self.down5]
 
         ranges = [[0, 4], [5, 9], [10, 16], [17, 23], [24, 29]]
         features = list(vgg16.features.children())
@@ -87,12 +83,13 @@ class SegnetEncoder(nn.Module):
         merged_layers = []
         for idx, conv_block in enumerate(blocks):
             if idx < 2:
-                units = [conv_block.conv1.cbr_unit,
-                         conv_block.conv2.cbr_unit]
+                units = [conv_block.conv1.cbr_unit, conv_block.conv2.cbr_unit]
             else:
-                units = [conv_block.conv1.cbr_unit,
-                         conv_block.conv2.cbr_unit,
-                         conv_block.conv3.cbr_unit]
+                units = [
+                    conv_block.conv1.cbr_unit,
+                    conv_block.conv2.cbr_unit,
+                    conv_block.conv3.cbr_unit,
+                ]
             for _unit in units:
                 for _layer in _unit:
                     if isinstance(_layer, nn.Conv2d):

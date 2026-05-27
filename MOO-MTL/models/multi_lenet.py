@@ -23,7 +23,7 @@ class MultiLeNetR(nn.Module):
         x = self.conv2(x)
         mask = self.dropout2dwithmask(x, mask)
         if self.training:
-            x = x*mask
+            x = x * mask
         x = F.relu(F.max_pool2d(x, 2))
         x = x.view(-1, 320)
         x = F.relu(self.fc(x))
@@ -41,6 +41,6 @@ class MultiLeNetO(nn.Module):
         if mask is None:
             mask = torch.bernoulli(x.new_full(x.size(), 0.5))
         if self.training:
-            x = x*mask
+            x = x * mask
         x = self.fc2(x)
         return F.log_softmax(x, dim=1), mask

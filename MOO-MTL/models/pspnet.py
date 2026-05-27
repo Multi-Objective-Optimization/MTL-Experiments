@@ -2,26 +2,28 @@
 
 import torch
 import torch.nn as nn
+
 import models.resnet_mit as resnet
 
 
 def get_segmentation_encoder():
-    orig_resnet = resnet.__dict__['resnet50'](pretrained=True)
+    orig_resnet = resnet.__dict__["resnet50"](pretrained=True)
     return ResnetDilated(orig_resnet, dilate_scale=8)
 
 
 def conv3x3(in_planes, out_planes, stride=1, has_bias=False):
     "3x3 convolution with padding"
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=1, bias=has_bias)
+    return nn.Conv2d(
+        in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=has_bias
+    )
 
 
 def conv3x3_bn_relu(in_planes, out_planes, stride=1):
     return nn.Sequential(
-            conv3x3(in_planes, out_planes, stride),
-            nn.BatchNorm2d(out_planes),
-            nn.ReLU(inplace=True),
-            )
+        conv3x3(in_planes, out_planes, stride),
+        nn.BatchNorm2d(out_planes),
+        nn.ReLU(inplace=True),
+    )
 
 
 class ResnetDilated(nn.Module):
@@ -30,13 +32,10 @@ class ResnetDilated(nn.Module):
         from functools import partial
 
         if dilate_scale == 8:
-            orig_resnet.layer3.apply(
-                partial(self._nostride_dilate, dilate=2))
-            orig_resnet.layer4.apply(
-                partial(self._nostride_dilate, dilate=4))
+            orig_resnet.layer3.apply(partial(self._nostride_dilate, dilate=2))
+            orig_resnet.layer4.apply(partial(self._nostride_dilate, dilate=4))
         elif dilate_scale == 16:
-            orig_resnet.layer4.apply(
-                partial(self._nostride_dilate, dilate=2))
+            orig_resnet.layer4.apply(partial(self._nostride_dilate, dilate=2))
 
         self.conv1 = orig_resnet.conv1
         self.bn1 = orig_resnet.bn1
@@ -49,12 +48,12 @@ class ResnetDilated(nn.Module):
 
     def _nostride_dilate(self, m, dilate):
         classname = m.__class__.__name__
-        if classname.find('Conv') != -1:
+        if classname.find("Conv") != -1:
             if m.stride == (2, 2):
                 m.stride = (1, 1)
                 if m.kernel_size == (3, 3):
-                    m.dilation = (dilate//2, dilate//2)
-                    m.padding = (dilate//2, dilate//2)
+                    m.dilation = (dilate // 2, dilate // 2)
+                    m.padding = (dilate // 2, dilate // 2)
             else:
                 if m.kernel_size == (3, 3):
                     m.dilation = (dilate, dilate)
@@ -72,27 +71,36 @@ class ResnetDilated(nn.Module):
 
 
 class SegmentationDecoder(nn.Module):
-    def __init__(self, num_class=21, fc_dim=2048, pool_scales=(1, 2, 3, 6), task_type='C'):
+    def __init__(
+        self, num_class=21, fc_dim=2048, pool_scales=(1, 2, 3, 6), task_type="C"
+    ):
         super(SegmentationDecoder, self).__init__()
 
         self.task_type = task_type
 
         self.ppm = []
         for scale in pool_scales:
-            self.ppm.append(nn.Sequential(
-                nn.AdaptiveAvgPool2d(scale),
-                nn.Conv2d(fc_dim, 512, kernel_size=1, bias=False),
-                nn.BatchNorm2d(512),
-                nn.ReLU(inplace=True)
-            ))
+            self.ppm.append(
+                nn.Sequential(
+                    nn.AdaptiveAvgPool2d(scale),
+                    nn.Conv2d(fc_dim, 512, kernel_size=1, bias=False),
+                    nn.BatchNorm2d(512),
+                    nn.ReLU(inplace=True),
+                )
+            )
         self.ppm = nn.ModuleList(self.ppm)
 
         self.conv_last = nn.Sequential(
-            nn.Conv2d(fc_dim+len(pool_scales)*512, 512,
-                      kernel_size=3, padding=1, bias=False),
+            nn.Conv2d(
+                fc_dim + len(pool_scales) * 512,
+                512,
+                kernel_size=3,
+                padding=1,
+                bias=False,
+            ),
             nn.BatchNorm2d(512),
             nn.ReLU(inplace=True),
-            nn.Conv2d(512, num_class, kernel_size=1)
+            nn.Conv2d(512, num_class, kernel_size=1),
         )
 
     def forward(self, conv_out, mask):
@@ -101,15 +109,18 @@ class SegmentationDecoder(nn.Module):
         input_size = conv5.size()
         ppm_out = [conv5]
         for pool_scale in self.ppm:
-            ppm_out.append(nn.functional.interpolate(
-                pool_scale(conv5),
-                (input_size[2], input_size[3]),
-                mode='bilinear',
-                align_corners=False))
+            ppm_out.append(
+                nn.functional.interpolate(
+                    pool_scale(conv5),
+                    (input_size[2], input_size[3]),
+                    mode="bilinear",
+                    align_corners=False,
+                )
+            )
         ppm_out = torch.cat(ppm_out, 1)
 
         x = self.conv_last(ppm_out)
 
-        if self.task_type == 'C':
+        if self.task_type == "C":
             x = nn.functional.log_softmax(x, dim=1)
         return x, mask
