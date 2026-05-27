@@ -1,10 +1,8 @@
 import autograd.numpy as np
 from autograd import grad
-
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from labellines import labelLines   # , labelLine,
-from EPOSearch.toy_experiments.utils.latex_utils import latexify
+from labellines import labelLines
 
 
 def f1(x):
@@ -31,7 +29,7 @@ def concave_fun_eval(x):
     return np.stack([f1(x), f2(x)]), np.stack([f1_dx(x), f2_dx(x)])
 
 
-# ### create the ground truth Pareto front ###
+# create the ground truth Pareto front
 def create_pf(side_nonpf=False):
     """
     if `side_nonpf` is True, then the boundary of attainable objectives,
@@ -104,7 +102,6 @@ if __name__ == '__main__':
     l1 = [f1(np.array([x])) for x in theta]
     l2 = [f2(np.array([x])) for x in theta]
 
-    latexify(fig_width=2.25, fig_height=1.8)
     fig, ax = plt.subplots()
     fig.subplots_adjust(left=0.025, bottom=.12, right=.975, top=.975)
     ax.spines['left'].set_position('zero')

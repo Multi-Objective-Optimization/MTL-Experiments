@@ -139,6 +139,7 @@ python simulation_vis.py   # Visualize kết quả
 
 ```
 toy_experiments/
+├── README.md
 ├── compare_solvers.py      # [Main] So sánh 4 solvers
 ├── compare_init.py         # [Main] So sánh với khởi tạo easy/hard
 ├── compare_descent.py      # [Main] Restricted vs Relaxed descent
@@ -146,18 +147,15 @@ toy_experiments/
 ├── trace_pf.py             # [Suppl.] Trace Pareto front (triobjective)
 ├── simulation.py           # [Suppl.] Many-objective scaling experiment
 ├── simulation_vis.py       # [Suppl.] Visualize simulation results
-├── latex_utils.py          # Tiện ích xuất bảng LaTeX
 ├── problems/
 │   ├── __init__.py
 │   ├── toy_biobjective.py  # 2 mục tiêu không lồi
-│   ├── toy_triobjective.py # 3 mục tiêu
-│   └── latex_utils.py
+│   └── toy_triobjective.py # 3 mục tiêu
 └── solvers/
-    ├── __init__.py
     ├── linscalar.py            # Linear Scalarization
     ├── moo_mtl.py              # MGDA-based MOO
     ├── min_norm_solvers_numpy.py  # Min-norm solver (NumPy)
-    ├── min_norm_solvers.py        # Min-norm solver (GPU)
+    ├── min_norm_solvers.py        # Min-norm solver (PyTorch/GPU)
     ├── pmtl.py                 # Pareto MTL (CPU)
     ├── pmtl_gpu.py             # Pareto MTL (GPU)
     ├── epo_lp.py               # EPO LP solver

@@ -1,10 +1,12 @@
 import numpy as np
 
 from problems.toy_biobjective import circle_points, concave_fun_eval, create_pf
-from solvers import epo_search, pareto_mtl_search, linscalar, moo_mtl_search
+from solvers.epo_search import epo_search
+from solvers.pmtl import pareto_mtl_search
+from solvers.linscalar import linscalar
+from solvers.moo_mtl import moo_mtl_search
 
 import matplotlib.pyplot as plt
-from utils.latex_utils import latexify
 
 if __name__ == '__main__':
     K = 4       # Number of trajectories
@@ -15,7 +17,7 @@ if __name__ == '__main__':
     pmtl_K = 5
     pmtl_refs = circle_points(pmtl_K, 0, np.pi / 2)
     methods = ['EPO', 'PMTL', 'MOOMTL', 'LinScalar']
-    latexify(fig_width=2., fig_height=1.55)
+
     ss, mi = 0.1, 100
     pf = create_pf()
     for method in methods:

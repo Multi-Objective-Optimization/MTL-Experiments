@@ -1,11 +1,11 @@
 import numpy as np
 
 from problems.toy_biobjective import circle_points, concave_fun_eval, create_pf
-from solvers import epo_search, pareto_mtl_search
+from solvers.epo_search import epo_search
+from solvers.pmtl import pareto_mtl_search
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from utils.latex_utils import latexify
 
 
 if __name__ == "__main__":
@@ -26,7 +26,6 @@ if __name__ == "__main__":
     msz = {"EPO": 90, "PMTL": 35}
 
     for method in methods:
-        latexify(fig_width=2.25, fig_height=1.8)
         fig, ax = plt.subplots()
         fig.subplots_adjust(left=.12, bottom=.12, right=.975, top=.975)
 

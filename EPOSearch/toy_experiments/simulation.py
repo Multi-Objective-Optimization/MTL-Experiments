@@ -3,7 +3,7 @@ from time import time
 import pickle
 import torch
 
-from solvers import epo_search
+from solvers.epo_search import epo_search
 from solvers.epo_lp import mu
 from solvers.pmtl_gpu import pareto_mtl_search
 

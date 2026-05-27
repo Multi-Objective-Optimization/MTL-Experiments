@@ -1,14 +1,13 @@
 import numpy as np
 
 from problems.toy_triobjective import concave_fun_eval, create_pf, sphere_points
-from solvers import epo_search
+from solvers.epo_search import epo_search
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib.colors as mcolors
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import proj3d
-from utils.latex_utils import latexify
 
 
 class Arrow3D(FancyArrowPatch):
@@ -33,7 +32,6 @@ if __name__ == '__main__':
     colors = list(mcolors.TABLEAU_COLORS.values())
     pf, pf_tri, ls, tri = create_pf()
 
-    latexify(fig_width=4., fig_height=3.6)
     params = {'axes.labelsize': 16,
               'axes.titlesize': 16,
               'font.size': 15,

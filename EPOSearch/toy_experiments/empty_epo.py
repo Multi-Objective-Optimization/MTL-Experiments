@@ -1,11 +1,10 @@
 import numpy as np
 
-from solvers import epo_search
+from solvers.epo_search import epo_search
 from problems.toy_biobjective import concave_fun_eval, create_pf, circle_points
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from utils.latex_utils import latexify
 
 
 def get_shifted_concave_fun(shift=0):
@@ -24,7 +23,6 @@ if __name__ == '__main__':
     ss = 0.3
     colors = list(mcolors.TABLEAU_COLORS.values())
 
-    latexify(fig_width=2., fig_height=1.8)
     fig = plt.figure()
     fig.subplots_adjust(left=.12, bottom=.12, right=.97, top=.97)
 
