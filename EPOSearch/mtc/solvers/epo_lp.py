@@ -1,28 +1,20 @@
 """
 EPO Linear Program Solver (epo_lp.py)
 ======================================
-Triển khai bộ giải LP (Linear Program) cho thuật toán EPO Search
-(Exact Pareto Optimal Search) trong bài toán Multi-Task Learning.
+Triển khai bộ giải LP (Linear Program) cho thuật toán EPO Search trong bài toán Multi-Task Learning.
 
 EPO Search tìm điểm Pareto Optimal thỏa mãn chính xác preference vector r
 do người dùng chỉ định. Ở mỗi bước, bài toán LP được giải để tìm vector
-trọng số α tối ưu nhằm tổ hợp gradient các task.
+trọng số alpha tối ưu nhằm tổ hợp gradient các task.
 
 Hai chế độ hoạt động chính:
-    1. Balancing mode (μᵣ > ε):
+    1. Balancing mode (\mu_r > epsilon):
        Khi điểm hiện tại chưa nằm trên tia preference r, giải LP để
-       kéo hướng cập nhật về tia preference (giảm non-uniformity μᵣ).
+       kéo hướng cập nhật về tia preference (giảm non-uniformity \mu_r).
 
-    2. Descent mode (μᵣ ≤ ε):
+    2. Descent mode (\mu_r <= epsilon):
        Khi đã gần hoặc nằm trên tia preference, thực hiện Pareto descent
        thuần túy để giảm đồng thời tất cả losses.
-
-Tham khảo:
-    Mahapatra, D., & Rajan, V. (2020).
-    "Multi-Task Learning with User Preferences: Gradient Descent with
-    Controlled Ascent in Pareto Optimization."
-    Proceedings of ICML 2020.
-    https://proceedings.mlr.press/v119/mahapatra20a.html
 """
 
 import cvxopt
@@ -43,12 +35,12 @@ class EPO_LP(object):
     Ký hiệu toán học:
         m  : số lượng task (số chiều của preference vector và loss vector)
         n  : số lượng tham số mô hình (model parameters)
-        r  : preference vector (m,), r_i > 0, Σr_i = 1
+        r  : preference vector (m,), r_i > 0, Σ r_i = 1
         l  : loss vector (m,), l_i là loss của task i
         G  : gradient matrix (m, n), G[i] = ∇_θ l_i(θ)
         C  : Gram matrix (m, m), C = G @ G.T, C_ij = <∇l_i, ∇l_j>
-        α  : combination weights (m,), α_i >= 0, Σα_i = 1
-        d  : hướng cập nhật tổng hợp = Σ α_i ∇l_i = G.T @ α
+        alpha  : combination weights (m,), alpha_i >= 0, Σ alpha_i = 1
+        d  : hướng cập nhật tổng hợp = Σ alpha_i ∇l_i = G.T @ alpha
     """
 
     def __init__(self, m, n, r, eps=1e-4):
@@ -65,9 +57,9 @@ class EPO_LP(object):
             r   (np.ndarray)   : Preference vector, shape (m,).
                                  Xác định tỉ lệ tương đối giữa các task.
                                  Ví dụ: r = [0.5, 0.5] nghĩa là ưu tiên đều 2 task.
-            eps (float)        : Ngưỡng non-uniformity μᵣ để chuyển chế độ.
-                                 - μᵣ >  eps → Balancing mode.
-                                 - μᵣ <= eps → Descent mode.
+            eps (float)        : Ngưỡng non-uniformity \mu_r để chuyển chế độ.
+                                 - \mu_r >  eps → Balancing mode.
+                                 - \mu_r <= eps → Descent mode.
                                  Mặc định: 1e-4.
         """
         # Tắt output log của solver GLPK để giữ terminal sạch
@@ -81,11 +73,11 @@ class EPO_LP(object):
         self.last_move = None  # Ghi nhận chế độ cuối cùng: "bal" hoặc "dom"
 
         # -----------------------------------------------------------------------
-        # Khai báo các cp.Parameter — giá trị được cập nhật mỗi lần gọi get_alpha
+        # Khai báo các cp.Parameter — giá trị được cập nhật mỗi lần gọi get_alpha()
         # -----------------------------------------------------------------------
 
         # a: Vector điều chỉnh (adjustment), shape (m,)
-        # a_i = r_i * (log(l̂_i * m) - μᵣ), dùng để định hướng về tia preference
+        # a_i = r_i * (log(l̂_i * m) - \mu_r), dùng để định hướng về tia preference
         self.a = cp.Parameter(m)
 
         # C: Gram matrix của gradients, shape (m, m)
@@ -104,12 +96,12 @@ class EPO_LP(object):
         # -----------------------------------------------------------------------
 
         # alpha: Vector trọng số cần tìm, shape (m,)
-        # Ràng buộc: α_i >= 0, Σα_i = 1 (nằm trên simplex chuẩn)
+        # Ràng buộc: α_i >= 0, Σ α_i = 1 (nằm trên simplex chuẩn)
         self.alpha = cp.Variable(m)
 
         # -----------------------------------------------------------------------
         # LP 1: Balancing Problem (prob_bal)
-        # Dùng khi μᵣ > ε (điểm hiện tại CHƯA nằm trên tia preference)
+        # Dùng khi \mu_r > epsilon (điểm hiện tại CHƯA nằm trên tia preference)
         #
         # Mục tiêu: Maximize α^T C a  ≡  Maximize <d_α, d_bal>
         #   → Tìm hướng d_α = G^T α gần nhất với hướng cân bằng d_bal = G^T a
@@ -130,7 +122,7 @@ class EPO_LP(object):
 
         # -----------------------------------------------------------------------
         # LP 2: Descent Problem (prob_dom & prob_rel)
-        # Dùng khi μᵣ <= ε (điểm đã GẦN tia preference)
+        # Dùng khi \mu_r <= epsilon (điểm đã GẦN tia preference)
         #
         # Mục tiêu: Maximize Σ_ij (α^T C)_ij  ≡  Maximize ||G^T α||²
         #   → Tìm hướng descent mạnh nhất trên Pareto front
@@ -166,20 +158,20 @@ class EPO_LP(object):
         # Lưu kết quả tối ưu LP gần nhất (giá trị objective)
         self.gamma = 0
 
-        # Lưu giá trị non-uniformity μᵣ gần nhất
+        # Lưu giá trị non-uniformity \mu_r gần nhất
         self.mu_rl = 0
 
     def get_alpha(self, l, G, r=None, C=False, relax=False):
         """
-        Giải LP để tính vector trọng số α tối ưu cho bước gradient.
+        Giải LP để tính vector trọng số alpha tối ưu cho bước gradient.
 
         Hàm này thực hiện toàn bộ logic của một bước EPO:
-          1. Tính non-uniformity μᵣ từ loss vector l và preference r.
-          2. Nếu μᵣ > ε → giải Balancing LP (kéo về tia preference).
-          3. Nếu μᵣ ≤ ε → giải Descent LP (tối ưu Pareto descent).
+          1. Tính non-uniformity \mu_r từ loss vector l và preference r.
+          2. Nếu \mu_r > epsilon → giải Balancing LP (kéo về tia preference).
+          3. Nếu \mu_r <= epsilon → giải Descent LP (tối ưu Pareto descent).
 
-        Hướng cập nhật tham số sau khi có α:
-            d = G.T @ α      (trong không gian tham số θ)
+        Hướng cập nhật tham số sau khi có alpha:
+            d = G.T @ alpha      (trong không gian tham số θ)
             θ ← θ - η * d   (gradient descent step)
 
         Args:
@@ -196,8 +188,8 @@ class EPO_LP(object):
 
         Returns:
             alpha (np.ndarray) : Vector trọng số tối ưu, shape (m,).
-                                 α_i >= 0, Σα_i = 1.
-                                 Dùng để tổ hợp gradient: d = Σ α_i ∇l_i.
+                                 alpha_i >= 0, Σ alpha_i = 1.
+                                 Dùng để tổ hợp gradient: d = Σ alpha_i ∇l_i.
 
         Raises:
             AssertionError: Nếu len(l), len(G), len(r) không bằng self.m.
@@ -206,10 +198,10 @@ class EPO_LP(object):
         r = self.r if r is None else r
         assert len(l) == len(G) == len(r) == self.m, "length != m"
 
-        # Bước 1: Tính rl = r ⊙ l, non-uniformity μᵣ, và adjustment vector a
+        # Bước 1: Tính rl = r ⊙ l, non-uniformity \mu_r, và adjustment vector a
         #   - rl    : preference-weighted loss, shape (m,)
-        #   - mu_rl : scalar non-uniformity μᵣ = KL(l̂ ‖ 1/m), đo khoảng cách từ tia r
-        #   - a     : adjustment vector, a_i = r_i * (log(l̂_i * m) - μᵣ)
+        #   - mu_rl : scalar non-uniformity \mu_r = KL(l̂ ‖ 1/m), đo khoảng cách từ tia r
+        #   - a     : adjustment vector, a_i = r_i * (log(l̂_i * m) - \mu_r)
         rl, self.mu_rl, self.a.value = adjustments(l, r)
 
         # Bước 2: Cập nhật Gram matrix C = G @ G.T (hoặc dùng trực tiếp nếu C=True)
@@ -255,7 +247,7 @@ class EPO_LP(object):
 
         else:
             # --- DESCENT MODE ---
-            # Điểm đã gần hoặc nằm trên tia preference (μᵣ ≤ ε)
+            # Điểm đã gần hoặc nằm trên tia preference (\mu_r <= epsilon)
             # → Thực hiện Pareto descent thuần túy để giảm tất cả losses
 
             if relax:
@@ -276,15 +268,10 @@ class EPO_LP(object):
 
 def mu(rl, normed=False):
     """
-    Tính non-uniformity μᵣ của phân phối weighted loss.
+    Tính non-uniformity \mu_r của phân phối weighted loss.
 
-    Non-uniformity đo khoảng cách giữa phân phối l̂ (normalized weighted loss)
-    và phân phối đều 1/m. Cụ thể, μᵣ = KL(l̂ ‖ uniform) = Σ l̂_i * log(m * l̂_i).
-
-    Ý nghĩa:
-        - μᵣ = 0  : l̂ đều (l̂_i = 1/m ∀i), tức là r ⊙ l ∝ 1 — điểm NẰM TRÊN tia r.
-        - μᵣ > 0  : l̂ không đều — điểm CHƯA nằm trên tia r, cần balancing.
-        - μᵣ nhỏ  : Gần tia r → chuyển sang Descent mode.
+    Non-uniformity đo khoảng cách giữa phân phối l̂ và phân phối 
+    đều 1/m. Cụ thể, \mu_r = KL(l̂ ‖ 1/m) = Σ l̂_i * log(m * l̂_i).
 
     Args:
         rl     (np.ndarray) : Vector r ⊙ l (preference-weighted losses), shape (m,).
@@ -293,25 +280,21 @@ def mu(rl, normed=False):
                               Nếu False (mặc định), hàm tự normalize: l̂ = rl / Σrl.
 
     Returns:
-        float : Giá trị non-uniformity μᵣ >= 0.
-                μᵣ = Σ l̂_i * log(l̂_i * m)
-
+        float : Giá trị non-uniformity \mu_r >= 0.
     Raises:
         ValueError: Nếu có phần tử rl_i < 0 (weighted loss âm — không hợp lệ).
     """
     if len(np.where(rl < 0)[0]):
         raise ValueError(f"rl<0 \n rl={rl}")
-        return None
 
     m = len(rl)
-    # Normalize thành phân phối xác suất l̂ (Σl̂_i = 1)
+    # Normalize thành phân phối xác suất l̂
     l_hat = rl if normed else rl / rl.sum()
 
     # Loại bỏ các phần tử quá nhỏ (epsilon machine) để tránh log(0)
     eps = np.finfo(rl.dtype).eps
     l_hat = l_hat[l_hat > eps]
 
-    # KL divergence: KL(l̂ ‖ uniform) = Σ l̂_i * log(l̂_i / (1/m)) = Σ l̂_i * log(m * l̂_i)
     return np.sum(l_hat * np.log(l_hat * m))
 
 
@@ -319,14 +302,8 @@ def adjustments(l, r=1):
     """
     Tính adjustment vector a dùng cho Balancing LP.
 
-    Adjustment vector a định hướng cập nhật để đưa điểm hiện tại về tia preference r.
-    Nó được tính từ gradient của KL-divergence theo hướng r.
-
     Công thức:
-        rl    = r ⊙ l                          (preference-weighted loss)
-        l̂     = rl / Σrl                       (normalized, thành phân phối)
-        μᵣ    = KL(l̂ ‖ 1/m) = Σ l̂_i log(m l̂_i)  (non-uniformity)
-        a_i   = r_i * (log(l̂_i * m) - μᵣ)     (adjustment: derivative of μᵣ w.r.t. l_i)
+        a_i   = r_i * (log(l̂_i * m) - \mu_f)
 
     Ý nghĩa của a_i:
         - a_i > 0: Task i đang có weighted loss cao hơn mức trung bình → cần giảm.
@@ -341,7 +318,7 @@ def adjustments(l, r=1):
     Returns:
         tuple:
             rl     (np.ndarray) : Preference-weighted loss r ⊙ l, shape (m,).
-            mu_rl  (float)      : Non-uniformity μᵣ = KL(l̂ ‖ 1/m).
+            mu_rl  (float)      : Non-uniformity \mu_r = KL(l̂ ‖ 1/m).
             a      (np.ndarray) : Adjustment vector, shape (m,).
     """
     m = len(l)
@@ -349,15 +326,13 @@ def adjustments(l, r=1):
     # Tính preference-weighted loss: rl_i = r_i * l_i
     rl = r * l
 
-    # Normalize thành phân phối: l̂_i = rl_i / Σrl_j
+    # Normalize
     l_hat = rl / rl.sum()
 
-    # Tính non-uniformity μᵣ = KL(l̂ ‖ 1/m)
+    # Tính non-uniformity \mu_r = KL(l̂ ‖ 1/m)
     mu_rl = mu(l_hat, normed=True)
 
-    # Tính adjustment: a_i = r_i * (log(l̂_i * m) - μᵣ)
-    # Đây là đạo hàm của μᵣ theo l_i, nhân với r_i
-    # Dùng để định hướng Balancing LP về tia preference
+    # Tính adjustment: a_i = r_i * (log(l̂_i * m) - \mu_r)
     a = r * (np.log(l_hat * m) - mu_rl)
 
     return rl, mu_rl, a
