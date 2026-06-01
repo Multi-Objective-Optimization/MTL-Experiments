@@ -10,18 +10,18 @@ import torch
 import numpy as np
 from torch import nn
 import torch.nn.functional as F
-from PHN.utils import (
+from utils import (
     set_seed,
     set_logger,
     count_parameters,
     get_device,
     save_args,
 )
-from PHN.sarcos.models import HyperFCNet, TargetFCNet
-from PHN.sarcos.data import get_data
+from sarcos.models import HyperFCNet, TargetFCNet
+from sarcos.data import get_data
 from pymoo.factory import get_reference_directions
 from pymoo.factory import get_performance_indicator
-from phn import EPOSolver, LinearScalarizationSolver
+from solvers import EPOSolver, LinearScalarizationSolver
 
 
 @torch.no_grad()

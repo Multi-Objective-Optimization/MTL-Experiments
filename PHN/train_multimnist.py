@@ -9,14 +9,14 @@ import torch
 from torch import nn
 from tqdm import trange
 
-from PHN.multimnist.data import Dataset
-from PHN.multimnist.models import (
+from multimnist.data import Dataset
+from multimnist.models import (
     LeNetHyper,
     LeNetTarget,
     ResnetHyper,
     ResNetTarget,
 )
-from PHN.utils import (
+from utils import (
     circle_points,
     count_parameters,
     get_device,
@@ -24,7 +24,7 @@ from PHN.utils import (
     set_logger,
     set_seed,
 )
-from phn import EPOSolver, LinearScalarizationSolver
+from solvers import EPOSolver, LinearScalarizationSolver
 
 
 @torch.no_grad()
