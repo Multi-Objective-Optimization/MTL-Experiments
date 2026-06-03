@@ -10,13 +10,13 @@ Please create a `data` folder and download the `.pickle` files.
 We support two model variants: `resnet` and `lenet` controlled by the `--model` flag. To run the LeNet experiment, use e.g.,
 
 ```bash
-python train.py --datapath data/multi_fashion_and_mnist.pickle --model lenet
+python train_multimnist.py --datapath data/multi_fashion_and_mnist.pickle --model lenet
 ```
 
 For the ResNet experiment with 5M trainable parameters, use e.g.,
 
 ```bash
-python train.py --datapath data/multi_fashion_and_mnist.pickle --model resnet --resnet-size 5M
+python train_multimnist.py --datapath data/multi_fashion_and_mnist.pickle --model resnet --resnet-size 5M
 ```
 
 We also support 1M, 2M and 11M trainable parameters.
@@ -33,5 +33,5 @@ The SARCOS data is available [here](http://gaussianprocess.org/gpml/data). Pleas
 To train PHN-EPO run:
 
 ```bash
-python train.py --datapath data --solevr epo
+python train_sarcos.py --datapath data --solevr epo
 ```
